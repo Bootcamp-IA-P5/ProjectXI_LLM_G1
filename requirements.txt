@@ -1,0 +1,22 @@
+# Web Framework
+fastapi
+uvicorn
+
+# LLM & AI
+langchain
+langchain-community
+
+# HTTP Client (para conectar Ollama)
+requests
+httpx
+
+# Variables de entorno
+python-dotenv
+
+# Testing
+pytest
+pytest-asyncio
+
+# Development
+black
+flake8
