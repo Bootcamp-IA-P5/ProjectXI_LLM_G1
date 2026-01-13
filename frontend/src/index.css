@@ -1,0 +1,45 @@
+h1 {
+    color: blue;
+    font-size: 16px;
+}
+
+h2 {
+    color: lightblue;
+    font-size: 14px;
+}
+
+body {
+    background-color:beige;
+    
+}
+
+input {
+    padding: 10px; /* margen */
+    border: 1px solid gray;
+}
+
+button:hover { /* efecto al pasar raton */ 
+    background-color: darkblue;
+}
+
+select {
+    padding: 10px;
+    border: 1px solid darkgray;
+}
+
+textarea {
+    padding: 10px;
+    border: 1px solid gray;
+    min-height: 120px;  /* Alto minimo */
+    width: 100%;        /* Ancho completo */
+    font-family: inherit;
+}
+
+.generarButton {
+    background-color: green;
+    color: white;
+}
+
+.generarButton:hover {
+    background-color: lightgreen;
+}

@@ -1,11 +1,11 @@
-version: '3.8'
-
 services:
   
   backend:
-    build: ./backend
+    build:
+      context: . # Raiz del proyecto
+      dockerfile: ./backend/Dockerfile
     ports: 
-      - "5000:5000"
+      - "5001:5000"
     environment:
       - OLLAMA_BASE_URL=http://ollama:11434
       - OLLAMA_MODEL=neural-chat
@@ -23,9 +23,9 @@ services:
       backend:
         condition: service_started
 
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
-    environment:
-      - OLLAMA_HOST=0.0.0.0:11434 # se descargará al usar el cliente
+  # ollama:
+  #  image: ollama/ollama:latest
+  #  ports:
+  #    - "11434:11434"
+  #  environment:
+  #    - OLLAMA_HOST=0.0.0.0:11434 # se descargará al usar el cliente
