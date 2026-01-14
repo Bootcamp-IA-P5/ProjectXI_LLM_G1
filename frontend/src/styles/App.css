@@ -1,0 +1,285 @@
+/* ========================================
+   IMPORTAR VARIABLES GLOBALES
+   ======================================== */
+@import './variables.css';
+
+/* ========================================
+
+/* ========================================
+   HEADER
+   ======================================== */
+
+.app-header {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+    color: white;
+    padding: var(--spacing-lg) var(--spacing-md);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: visible;
+}
+
+.app-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(124, 58, 237, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.2) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    position: relative;
+}
+
+.logo-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    align-items: center;
+    text-align: center;
+    flex: 1;
+}
+
+.theme-toggle {
+    position: absolute;
+    right: var(--spacing-md);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-lg);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    backdrop-filter: blur(10px);
+}
+
+.theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.1);
+}
+
+.theme-toggle:active {
+    transform: scale(0.95);
+}
+
+.app-title {
+    font-size: var(--font-size-2xl);
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    margin: 0;
+    background: linear-gradient(135deg, #fff 0%, #e0e7ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    white-space: nowrap;
+}
+
+.app-subtitle {
+    font-size: var(--font-size-lg);
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+}
+
+/* ========================================
+   CONTENEDOR APP
+   ======================================== */
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ========================================
+   MAIN CONTENT
+   ======================================== */
+
+.app-main {
+    flex: 1;
+    padding: var(--spacing-2xl) var(--spacing-md);
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-start;
+}
+
+.content-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-2xl);
+    width: 100%;
+    min-height: auto;
+}
+
+.form-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.output-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+/* ========================================
+   FOOTER
+   ======================================== */
+
+.app-footer {
+    background: var(--primary-dark);
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    padding: var(--spacing-xl) var(--spacing-md);
+    font-size: var(--font-size-sm);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: auto;
+    width: 100%;
+}
+
+.app-footer p {
+    margin: 0;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 1024px) {
+    .content-wrapper {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-xl);
+    }
+    
+    .app-title {
+        font-size: var(--font-size-2xl);
+    }
+    
+    .app-main {
+        padding: var(--spacing-xl) var(--spacing-md);
+    }
+}
+
+@media (max-width: 640px) {
+    .app-header {
+        padding: var(--spacing-lg) var(--spacing-md);
+    }
+    
+    .app-title {
+        font-size: var(--font-size-xl);
+    }
+    
+    .app-subtitle {
+        font-size: var(--font-size-base);
+    }
+    
+    .app-main {
+        padding: var(--spacing-lg) var(--spacing-sm);
+    }
+    
+    .content-wrapper {
+        gap: var(--spacing-lg);
+    }
+}
+
+/* ========================================
+   ANIMACIONES
+   ======================================== */
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ========================================
+   DARK MODE STYLES
+   ======================================== */
+
+[data-theme="dark"] {
+    --primary-dark: #0a0e27;
+    --primary-blue: #1e3a8a;
+}
+
+[data-theme="dark"] body {
+    background: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 100%);
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .output-content {
+    background: #1e293b;
+    color: #f1f5f9;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] label {
+    color: #f1f5f9;
+}
+
+.app-header {
+    animation: fadeInDown 0.6s ease-out;
+}
+
+.form-container {
+    animation: slideInLeft 0.6s ease-out 0.1s both;
+}
+
+.output-container {
+    animation: slideInRight 0.6s ease-out 0.1s both;
+}

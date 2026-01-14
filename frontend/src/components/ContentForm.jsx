@@ -1,76 +1,158 @@
-import {useState} from 'react'; // Hook para crear estado
+import {useState} from 'react';
+import '../styles/ContentForm.css';
 
-
-// Primer paso: ContentForm sirve unicamente para recoger los datos, validar que hay algo, y enviar a App.jsx (padre)
 export default function ContentForm({onSubmit}) {
-    // useState para estado
     const [tema, setTema] = useState("");
     const [plataforma, setPlataforma] = useState("");
     const [audiencia, setAudiencia] = useState("");
     const [infoAdicional, setInfoAdicional] = useState("");
+    const [errors, setErrors] = useState({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
     
-    function handleSubmit(e) {
+    function validateForm() {
+        const newErrors = {};
         
-        e.preventDefault();
-
-        if (tema === "") {
-            console.log("Error");
-            return;
+        if (tema.trim() === "") {
+            newErrors.tema = "El tema es requerido";
         }
-
+        
         if (plataforma === "") {
-            console.log("Error");
-            return;
+            newErrors.plataforma = "Selecciona una plataforma";
         }
-
-        if (audiencia === "") {
-            console.log("Error");
-            return;
+        
+        if (audiencia.trim() === "") {
+            newErrors.audiencia = "La audiencia es requerida";
         }
-        console.log("Datos ok, enviar");
-        const datos = {tema, plataforma, audiencia, infoAdicional};
-        onSubmit(datos); // Llamar a la funcion onSubmit que viene del padre (App.jsx)
+        
+        return newErrors;
     }
 
+    function handleSubmit(e) {
+        e.preventDefault();
+        
+        const newErrors = validateForm();
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
+        setErrors({});
+        setIsSubmitting(true);
+        
+        const datos = {tema, plataforma, audiencia, infoAdicional};
+        onSubmit(datos);
+        
+        setTimeout(() => {
+            setIsSubmitting(false);
+        }, 500);
+    }
+
+    function handleReset() {
+        setTema("");
+        setPlataforma("");
+        setAudiencia("");
+        setInfoAdicional("");
+        setErrors({});
+    }
 
     return (
-    <form onSubmit={handleSubmit}> 
-        <label>Tema</label>
-        {/* value para decir muestra el estado */}
-        {/* onChange cuando el usuario escribe, actualiza el estado */}
-        <input 
-        type="text"
-        value={tema}                                
-        onChange={(e) => setTema(e.target.value)}   
-        />
+        <form onSubmit={handleSubmit} className="form-card">
+            <div className="form-header">
+                <h2 className="form-title">📝 Crea tu Contenido</h2>
+            </div>
+            
+            <div className={`form-group ${errors.tema ? 'error' : ''}`}>
+                <label className="form-label" htmlFor="tema">Tema Principal</label>
+                <input 
+                    id="tema"
+                    type="text"
+                    placeholder="Ej: Machine Learning, Web Design, Marketing..."
+                    value={tema}                                
+                    onChange={(e) => {
+                        setTema(e.target.value);
+                        if (errors.tema) {
+                            setErrors({...errors, tema: ''});
+                        }
+                    }}
+                />
+                {errors.tema && <span className="form-error">{errors.tema}</span>}
+            </div>
 
+            <div className={`form-group ${errors.plataforma ? 'error' : ''}`}>
+                <label className="form-label" htmlFor="plataforma">Plataforma Destino</label>
+                <select 
+                    id="plataforma"
+                    value={plataforma} 
+                    onChange={(e) => {
+                        setPlataforma(e.target.value);
+                        if (errors.plataforma) {
+                            setErrors({...errors, plataforma: ''});
+                        }
+                    }}
+                >
+                    <option value="">Selecciona una plataforma</option>
+                    <option value="twitter">🐦 Twitter / X</option>
+                    <option value="blog">📰 Blog</option>
+                    <option value="instagram">📸 Instagram</option>
+                    <option value="linkedIn">💼 LinkedIn</option>
+                    <option value="tiktok">🎵 TikTok</option>
+                    <option value="youtube">▶️ YouTube</option>
+                </select>
+                {errors.plataforma && <span className="form-error">{errors.plataforma}</span>}
+            </div>
 
-        <label>Plataforma</label>
-        <select value={plataforma} onChange={(e) => setPlataforma(e.target.value)}>
-            <option value="">Selecciona plataforma</option>
-            <option value="twitter">Twitter</option>
-            <option value="blog">Blog</option>
-            <option value="instagram">Instagram</option>
-            <option value="linkedIn">LinkedIn</option>
-        </select>
-       
+            <div className={`form-group ${errors.audiencia ? 'error' : ''}`}>
+                <label className="form-label" htmlFor="audiencia">Audiencia Target</label>
+                <input 
+                    id="audiencia"
+                    type="text"
+                    placeholder="Ej: Desarrolladores, Empresarios, Estudiantes..."
+                    value={audiencia}
+                    onChange={(e) => {
+                        setAudiencia(e.target.value);
+                        if (errors.audiencia) {
+                            setErrors({...errors, audiencia: ''});
+                        }
+                    }}
+                />
+                {errors.audiencia && <span className="form-error">{errors.audiencia}</span>}
+            </div>
 
-        <label>Audiencia</label>
-        <input 
-        type="text"
-        value={audiencia}
-        onChange={(e) => setAudiencia(e.target.value)} 
-        />
+            <div className="form-group">
+                <label className="form-label optional" htmlFor="infoAdicional">Información Adicional</label>
+                <textarea
+                    id="infoAdicional"
+                    value={infoAdicional}
+                    onChange={(e) => setInfoAdicional(e.target.value)}
+                    placeholder="Detalles adicionales, instrucciones especiales, tono deseado, etc... (Opcional)"
+                />
+            </div>
 
-        <label>Información Adicional (Opcional)</label>
-        <textarea
-            value={infoAdicional}
-            onChange={(e) => setInfoAdicional(e.target.value)}
-            placeholder="(opcional)"
-        >
-            </textarea>
+            <div className="form-button-group">
+                <button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? (
+                        <>
+                            <span className="loading-spinner"></span>
+                            Generando...
+                        </>
+                    ) : (
+                        <>✨ Generar Contenido</>
+                    )}
+                </button>
+                <button 
+                    type="reset"
+                    onClick={handleReset}
+                >
+                    🔄 Limpiar
+                </button>
+            </div>
 
-        <button type="submit">Generar</button>
-    </form>
+            <div className="form-tip">
+                <span>Proporciona más detalles en la información adicional para obtener mejor contenido.</span>
+            </div>
+        </form>
     )
 }

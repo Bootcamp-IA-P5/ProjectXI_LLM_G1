@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import ContentForm from './components/ContentForm';
 import OutputDisplay from './components/OutputDisplay';
-import { generateContent } from './services/api.js'; // {} porque no es export default; ruta con comillas
+import { generateContent } from './services/api.js';
+import './styles/App.css';
 
 export default function App() {
 
@@ -9,6 +10,17 @@ export default function App() {
     const [contenidoGenerado, setContenidoGenerado] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [darkMode, setDarkMode] = useState(() => {
+        const saved = localStorage.getItem('darkMode');
+        return saved !== null ? JSON.parse(saved) : false;
+    });
+
+    const toggleDarkMode = () => {
+        const newMode = !darkMode;
+        setDarkMode(newMode);
+        localStorage.setItem('darkMode', JSON.stringify(newMode));
+        document.documentElement.setAttribute('data-theme', newMode ? 'dark' : 'light');
+    };
 
     async function handleFormSubmit(datos) {
 
@@ -37,18 +49,37 @@ export default function App() {
     }
 
     return (
-        <div>
-            {/*TODO: Pasar handleFormSubmit a ContentForm */}
-            <ContentForm onSubmit={handleFormSubmit} />
-            {/*          ↑ "onSubmit" es una prop
-                                    ↑ handleFormSubmit es el valor*/}
+        <div className="app-container">
+            <header className="app-header">
+                <div className="header-content">
+                    <div className="logo-section">
+                        <h1 className="app-title">✨ Synthetix</h1>
+                        <p className="app-subtitle">Generador de Contenido Inteligente con IA</p>
+                    </div>
+                    <button className="theme-toggle" onClick={toggleDarkMode} aria-label="Cambiar tema">
+                        {darkMode ? '☀️' : '🌙'}
+                    </button>
+                </div>
+            </header>
 
-            {/* Pasar contenidoGenerado a OutputDisplay */}
-            <OutputDisplay 
-                contenido={contenidoGenerado}
-                loading={loading}
-                error={error}
-            />
+            <main className="app-main">
+                <div className="content-wrapper">
+                    <div className="form-container">
+                        <ContentForm onSubmit={handleFormSubmit} />
+                    </div>
+                    <div className="output-container">
+                        <OutputDisplay 
+                            contenido={contenidoGenerado}
+                            loading={loading}
+                            error={error}
+                        />
+                    </div>
+                </div>
+            </main>
+
+            <footer className="app-footer">
+                <p>&copy; 2026 Synthetix - Grupo 1 Factoria F5. Potenciado por IA avanzada.</p>
+            </footer>
         </div>
     )
 }
