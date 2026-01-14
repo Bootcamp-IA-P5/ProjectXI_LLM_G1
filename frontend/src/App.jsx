@@ -38,7 +38,7 @@ export default function App() {
             setContenidoGenerado(response.contenido);
             setError("");
 
-        } catch (error) {
+        } catch (error) {
             console.error("ERROR:", error);  // ← Y AQUÍ
             setError(error.message);
             setContenidoGenerado("")
@@ -68,7 +68,7 @@ export default function App() {
                         <ContentForm onSubmit={handleFormSubmit} />
                     </div>
                     <div className="output-container">
-                        <OutputDisplay 
+                        <OutputDisplay
                             contenido={contenidoGenerado}
                             loading={loading}
                             error={error}

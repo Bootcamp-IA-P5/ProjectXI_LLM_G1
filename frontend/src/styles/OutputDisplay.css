@@ -97,13 +97,18 @@
 }
 
 @keyframes dots {
-    0%, 20% {
+
+    0%,
+    20% {
         content: '.';
     }
+
     40% {
         content: '..';
     }
-    60%, 100% {
+
+    60%,
+    100% {
         content: '...';
     }
 }
@@ -135,12 +140,16 @@
 }
 
 @keyframes shake {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: translateX(0);
     }
+
     25% {
         transform: translateX(-5px);
     }
+
     75% {
         transform: translateX(5px);
     }
@@ -208,7 +217,7 @@
 }
 
 /* Mejorar párrafos */
-.output-text + .output-text {
+.output-text+.output-text {
     margin-top: var(--spacing-md);
 }
 
@@ -234,9 +243,12 @@
 }
 
 @keyframes float {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: translateY(0);
     }
+
     50% {
         transform: translateY(-10px);
     }
@@ -321,6 +333,7 @@
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -331,6 +344,7 @@
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -345,15 +359,15 @@
     .output-card {
         padding: var(--spacing-lg);
     }
-    
+
     .output-content {
         min-height: 300px;
     }
-    
+
     .output-actions {
         flex-direction: column;
     }
-    
+
     .btn-secondary {
         width: 100%;
     }

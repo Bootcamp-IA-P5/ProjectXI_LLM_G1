@@ -9,18 +9,25 @@
     /* ========================================
        COLORES PRINCIPALES
        ======================================== */
-    
+
     /* Tonos primarios */
-    --primary-dark: #0f172a;      /* Azul oscuro profundo */
-    --primary-blue: #2563eb;       /* Azul vibrante */
-    --primary-purple: #7c3aed;     /* Morado elegante */
-    
+    --primary-dark: #0f172a;
+    /* Azul oscuro profundo */
+    --primary-blue: #2563eb;
+    /* Azul vibrante */
+    --primary-purple: #7c3aed;
+    /* Morado elegante */
+
     /* Tonos de acento */
-    --accent-cyan: #06b6d4;        /* Cyan/Verde agua */
-    --accent-green: #10b981;       /* Verde profesional */
-    --accent-orange: #f97316;      /* Naranja energético */
-    --accent-red: #ef4444;         /* Rojo para errores */
-    
+    --accent-cyan: #06b6d4;
+    /* Cyan/Verde agua */
+    --accent-green: #10b981;
+    /* Verde profesional */
+    --accent-orange: #f97316;
+    /* Naranja energético */
+    --accent-red: #ef4444;
+    /* Rojo para errores */
+
     /* Tonos de escala de grises */
     --gray-50: #f9fafb;
     --gray-100: #f3f4f6;
@@ -32,64 +39,92 @@
     --gray-700: #374151;
     --gray-800: #1f2937;
     --gray-900: #111827;
-    
+
     /* Fondos */
-    --light-bg: #f8fafc;           /* Fondo claro */
-    --card-bg: #ffffff;            /* Fondo tarjetas */
-    --dark-bg: #0f172a;            /* Fondo oscuro */
-    
+    --light-bg: #f8fafc;
+    /* Fondo claro */
+    --card-bg: #ffffff;
+    /* Fondo tarjetas */
+    --dark-bg: #0f172a;
+    /* Fondo oscuro */
+
     /* Bordes y separadores */
-    --border-color: #e2e8f0;       /* Bordes sutiles */
-    --border-color-dark: #cbd5e1;  /* Bordes más oscuros */
-    
+    --border-color: #e2e8f0;
+    /* Bordes sutiles */
+    --border-color-dark: #cbd5e1;
+    /* Bordes más oscuros */
+
     /* Texto */
-    --text-dark: #1e293b;          /* Texto principal */
-    --text-light: #64748b;         /* Texto secundario */
-    --text-lighter: #94a3b8;       /* Texto terciario */
-    --text-white: #ffffff;         /* Texto en fondos oscuros */
-    
+    --text-dark: #1e293b;
+    /* Texto principal */
+    --text-light: #64748b;
+    /* Texto secundario */
+    --text-lighter: #94a3b8;
+    /* Texto terciario */
+    --text-white: #ffffff;
+    /* Texto en fondos oscuros */
+
     /* Estados */
-    --error-color: #ef4444;        /* Rojo error */
+    --error-color: #ef4444;
+    /* Rojo error */
     --error-bg: rgba(239, 68, 68, 0.05);
-    --success-color: #10b981;      /* Verde éxito */
+    --success-color: #10b981;
+    /* Verde éxito */
     --success-bg: rgba(16, 185, 129, 0.05);
-    --warning-color: #f59e0b;      /* Ámbar advertencia */
+    --warning-color: #f59e0b;
+    /* Ámbar advertencia */
     --warning-bg: rgba(245, 158, 11, 0.05);
-    --info-color: #2563eb;         /* Azul información */
+    --info-color: #2563eb;
+    /* Azul información */
     --info-bg: rgba(37, 99, 235, 0.05);
-    
+
     /* ========================================
        ESPACIADO (escala vertical)
        ======================================== */
-    
-    --spacing-xs: 0.25rem;    /* 4px */
-    --spacing-sm: 0.5rem;     /* 8px */
-    --spacing-md: 1rem;       /* 16px */
-    --spacing-lg: 1.5rem;     /* 24px */
-    --spacing-xl: 2rem;       /* 32px */
-    --spacing-2xl: 3rem;      /* 48px */
-    --spacing-3xl: 4rem;      /* 64px */
-    
+
+    --spacing-xs: 0.25rem;
+    /* 4px */
+    --spacing-sm: 0.5rem;
+    /* 8px */
+    --spacing-md: 1rem;
+    /* 16px */
+    --spacing-lg: 1.5rem;
+    /* 24px */
+    --spacing-xl: 2rem;
+    /* 32px */
+    --spacing-2xl: 3rem;
+    /* 48px */
+    --spacing-3xl: 4rem;
+    /* 64px */
+
     /* ========================================
        TIPOGRAFÍA
        ======================================== */
-    
+
     /* Fuentes */
     --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
         'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
         sans-serif;
     --font-family-mono: 'Menlo', 'Monaco', 'Courier New', monospace;
-    
+
     /* Tamaños */
-    --font-size-xs: 0.75rem;      /* 12px */
-    --font-size-sm: 0.875rem;     /* 14px */
-    --font-size-base: 1rem;       /* 16px */
-    --font-size-lg: 1.125rem;     /* 18px */
-    --font-size-xl: 1.25rem;      /* 20px */
-    --font-size-2xl: 1.875rem;    /* 30px */
-    --font-size-3xl: 2.25rem;     /* 36px */
-    --font-size-4xl: 3rem;        /* 48px */
-    
+    --font-size-xs: 0.75rem;
+    /* 12px */
+    --font-size-sm: 0.875rem;
+    /* 14px */
+    --font-size-base: 1rem;
+    /* 16px */
+    --font-size-lg: 1.125rem;
+    /* 18px */
+    --font-size-xl: 1.25rem;
+    /* 20px */
+    --font-size-2xl: 1.875rem;
+    /* 30px */
+    --font-size-3xl: 2.25rem;
+    /* 36px */
+    --font-size-4xl: 3rem;
+    /* 48px */
+
     /* Pesos */
     --font-weight-light: 300;
     --font-weight-normal: 400;
@@ -97,74 +132,79 @@
     --font-weight-semibold: 600;
     --font-weight-bold: 700;
     --font-weight-extrabold: 800;
-    
+
     /* ========================================
        SOMBRAS
        ======================================== */
-    
+
     --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    
+
     /* Sombras de color */
     --shadow-blue: 0 10px 15px -3px rgba(37, 99, 235, 0.2);
     --shadow-purple: 0 10px 15px -3px rgba(124, 58, 237, 0.2);
     --shadow-green: 0 10px 15px -3px rgba(16, 185, 129, 0.2);
-    
+
     /* ========================================
        BORDES Y ESQUINAS
        ======================================== */
-    
-    --border-radius-sm: 0.375rem;   /* 6px */
-    --border-radius-md: 0.5rem;     /* 8px */
-    --border-radius-lg: 1rem;       /* 16px */
-    --border-radius-xl: 1.5rem;     /* 24px */
-    --border-radius-full: 9999px;   /* Circular */
-    
+
+    --border-radius-sm: 0.375rem;
+    /* 6px */
+    --border-radius-md: 0.5rem;
+    /* 8px */
+    --border-radius-lg: 1rem;
+    /* 16px */
+    --border-radius-xl: 1.5rem;
+    /* 24px */
+    --border-radius-full: 9999px;
+    /* Circular */
+
     --border-width-thin: 1px;
     --border-width-normal: 2px;
     --border-width-thick: 3px;
-    
+
     /* ========================================
        TRANSICIONES Y ANIMACIONES
        ======================================== */
-    
+
     /* Duraciones */
     --duration-fast: 100ms;
     --duration-normal: 150ms;
     --duration-slow: 250ms;
     --duration-slower: 350ms;
     --duration-slowest: 500ms;
-    
+
     /* Funciones de tiempo */
     --ease-in: cubic-bezier(0.4, 0, 1, 1);
     --ease-out: cubic-bezier(0, 0, 0.2, 1);
     --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
     --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    
+
     /* Transiciones predefinidas */
     --transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-normal: 150ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-slow: 250ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-slower: 350ms cubic-bezier(0.4, 0, 0.2, 1);
-    
+
     /* ========================================
        BREAKPOINTS (responsivos)
        ======================================== */
-    
+
     --breakpoint-sm: 640px;
     --breakpoint-md: 768px;
     --breakpoint-lg: 1024px;
     --breakpoint-xl: 1280px;
     --breakpoint-2xl: 1536px;
-    
+
     /* ========================================
        VARIABLES DE OPACIDAD
        ======================================== */
-    
+
     --opacity-0: 0;
     --opacity-5: 0.05;
     --opacity-10: 0.1;
@@ -178,11 +218,11 @@
     --opacity-90: 0.9;
     --opacity-95: 0.95;
     --opacity-100: 1;
-    
+
     /* ========================================
        Z-INDEX (capas)
        ======================================== */
-    
+
     --z-hide: -1;
     --z-auto: auto;
     --z-base: 0;

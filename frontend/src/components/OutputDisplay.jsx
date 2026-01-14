@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import '../styles/OutputDisplay.css';
 
-export default function OutputDisplay({contenido, loading, error}) {
+export default function OutputDisplay({ contenido, loading, error }) {
     const [copied, setCopied] = useState(false);
 
     function handleCopy() {
@@ -15,7 +15,7 @@ export default function OutputDisplay({contenido, loading, error}) {
     function handleDownload() {
         if (contenido) {
             const element = document.createElement('a');
-            const file = new Blob([contenido], {type: 'text/plain'});
+            const file = new Blob([contenido], { type: 'text/plain' });
             element.href = URL.createObjectURL(file);
             element.download = `contenido_${new Date().getTime()}.txt`;
             document.body.appendChild(element);
@@ -58,14 +58,14 @@ export default function OutputDisplay({contenido, loading, error}) {
                         <p className="output-text">{contenido}</p>
                     </div>
                     <div className="output-actions">
-                        <button 
+                        <button
                             className={`btn-secondary btn-copy ${copied ? 'copied' : ''}`}
                             onClick={handleCopy}
                             title="Copiar al portapapeles"
                         >
                             {copied ? '✓ Copiado' : '📋 Copiar'}
                         </button>
-                        <button 
+                        <button
                             className="btn-secondary"
                             onClick={handleDownload}
                             title="Descargar como archivo"

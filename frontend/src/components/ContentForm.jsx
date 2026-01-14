@@ -1,35 +1,35 @@
-import {useState} from 'react';
+import { useState } from 'react';
 import '../styles/ContentForm.css';
 
-export default function ContentForm({onSubmit}) {
+export default function ContentForm({ onSubmit }) {
     const [tema, setTema] = useState("");
     const [plataforma, setPlataforma] = useState("");
     const [audiencia, setAudiencia] = useState("");
     const [infoAdicional, setInfoAdicional] = useState("");
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
+
     function validateForm() {
         const newErrors = {};
-        
+
         if (tema.trim() === "") {
             newErrors.tema = "El tema es requerido";
         }
-        
+
         if (plataforma === "") {
             newErrors.plataforma = "Selecciona una plataforma";
         }
-        
+
         if (audiencia.trim() === "") {
             newErrors.audiencia = "La audiencia es requerida";
         }
-        
+
         return newErrors;
     }
 
     function handleSubmit(e) {
         e.preventDefault();
-        
+
         const newErrors = validateForm();
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -38,10 +38,10 @@ export default function ContentForm({onSubmit}) {
 
         setErrors({});
         setIsSubmitting(true);
-        
-        const datos = {tema, plataforma, audiencia, infoAdicional};
+
+        const datos = { tema, plataforma, audiencia, infoAdicional };
         onSubmit(datos);
-        
+
         setTimeout(() => {
             setIsSubmitting(false);
         }, 500);
@@ -60,18 +60,18 @@ export default function ContentForm({onSubmit}) {
             <div className="form-header">
                 <h2 className="form-title">📝 Crea tu Contenido</h2>
             </div>
-            
+
             <div className={`form-group ${errors.tema ? 'error' : ''}`}>
                 <label className="form-label" htmlFor="tema">Tema Principal</label>
-                <input 
+                <input
                     id="tema"
                     type="text"
                     placeholder="Ej: Machine Learning, Web Design, Marketing..."
-                    value={tema}                                
+                    value={tema}
                     onChange={(e) => {
                         setTema(e.target.value);
                         if (errors.tema) {
-                            setErrors({...errors, tema: ''});
+                            setErrors({ ...errors, tema: '' });
                         }
                     }}
                 />
@@ -80,13 +80,13 @@ export default function ContentForm({onSubmit}) {
 
             <div className={`form-group ${errors.plataforma ? 'error' : ''}`}>
                 <label className="form-label" htmlFor="plataforma">Plataforma Destino</label>
-                <select 
+                <select
                     id="plataforma"
-                    value={plataforma} 
+                    value={plataforma}
                     onChange={(e) => {
                         setPlataforma(e.target.value);
                         if (errors.plataforma) {
-                            setErrors({...errors, plataforma: ''});
+                            setErrors({ ...errors, plataforma: '' });
                         }
                     }}
                 >
@@ -103,7 +103,7 @@ export default function ContentForm({onSubmit}) {
 
             <div className={`form-group ${errors.audiencia ? 'error' : ''}`}>
                 <label className="form-label" htmlFor="audiencia">Audiencia Target</label>
-                <input 
+                <input
                     id="audiencia"
                     type="text"
                     placeholder="Ej: Desarrolladores, Empresarios, Estudiantes..."
@@ -111,7 +111,7 @@ export default function ContentForm({onSubmit}) {
                     onChange={(e) => {
                         setAudiencia(e.target.value);
                         if (errors.audiencia) {
-                            setErrors({...errors, audiencia: ''});
+                            setErrors({ ...errors, audiencia: '' });
                         }
                     }}
                 />
@@ -129,8 +129,8 @@ export default function ContentForm({onSubmit}) {
             </div>
 
             <div className="form-button-group">
-                <button 
-                    type="submit" 
+                <button
+                    type="submit"
                     disabled={isSubmitting}
                 >
                     {isSubmitting ? (
@@ -142,7 +142,7 @@ export default function ContentForm({onSubmit}) {
                         <>✨ Generar Contenido</>
                     )}
                 </button>
-                <button 
+                <button
                     type="reset"
                     onClick={handleReset}
                 >
