@@ -76,3 +76,21 @@ def get_full_prompt(tema, plataforma, audiencia, informacion_adicional=""):
     base = SYSTEM_PROMPT
     specific = func(tema, audiencia, informacion_adicional)
     return base + "\n" + specific
+
+def get_full_prompt(tema, audiencia, plataforma, informacion_adicional, idioma):
+    """
+    Construye el 'Super Prompt' combinando todas las capas de requisitos.
+    """
+    # Capa 1: Restricción de Idioma (Prioridad máxima)
+    instruccion_idioma = f"Toda tu respuesta debe estar escrita en {idioma}."
+
+    # Capa 2: Personalización de Marca 
+    # Si hay info de la empresa, la incluimos para que el contenido sea único
+    contexto_marca = f"Ten en cuenta esta información de la marca: {informacion_adicional}" if informacion_adicional else ""
+
+    # Capa 3: Instrucción de Tarea 
+    # Aquí es donde el modelo aplica su conocimiento de la plataforma
+    tarea = f"Escribe un contenido para {plataforma} sobre el tema '{tema}' dirigido a una audiencia de {audiencia}."
+
+    # Unimos todo en un solo bloque de texto coherente
+    return f"{instruccion_idioma}\n{contexto_marca}\n\n{tarea}"
