@@ -5,6 +5,9 @@ uvicorn
 # LLM & AI
 langchain
 langchain-community
+groq
+crewai[google-genai]>=0.30.0
+google-generativeai>=0.3.0
 
 # HTTP Client (para conectar Ollama)
 requests
@@ -20,3 +23,6 @@ pytest-asyncio
 # Development
 black
 flake8
+
+huggingface-hub>=0.19.0
+pillow

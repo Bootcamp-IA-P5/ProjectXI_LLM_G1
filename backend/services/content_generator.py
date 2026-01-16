@@ -1,15 +1,15 @@
-from llm.ollama_client import OllamaClient
+from llm.groq_client import GroqClient
 from llm.prompts import get_full_prompt
 import logging
 
 logger = logging.getLogger(__name__)
 
 class ContentGenerator:
-    """Orquestador: coordina prompts + ollama_client"""
+    """Orquestador: coordina prompts + groq_client"""
 
-    def __init__(self, ollama_client: OllamaClient):
-        """Recibir cliente Ollama (inyeccion de dependencia)"""
-        self.ollama_client = ollama_client
+    def __init__(self, groq_client: GroqClient):
+        """Recibir cliente Groq (inyeccion de dependencia)"""
+        self.groq_client = groq_client
         self.plataformas_soportadas = ["twitter", "blog", "instagram", "linkedin"]
 
     def generate_content(self, tema: str, plataforma: str, audiencia: str, informacion_adicional: str = "") -> str:
@@ -45,8 +45,8 @@ class ContentGenerator:
             # Paso 1: Obtener prompt final (combina SYSTEM + especifico)
             prompt_final = get_full_prompt(tema, audiencia, plataforma, informacion_adicional)
             
-            # Paso 2: Generar con Ollama
-            contenido = self.ollama_client.generate(prompt_final)
+            # Paso 2: Generar con Groq
+            contenido = self.groq_client.chat.completions.create(prompt_final)
             
             logger.info("✅ Contenido generado exitosamente")
             
