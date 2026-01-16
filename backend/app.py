@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from routes.api import router
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
@@ -19,6 +21,10 @@ app = FastAPI(
 
 from routes.api import router
 app.include_router(router)
+
+# archivos estaticos de imagenes generadas
+app.mount("/generated_images", StaticFiles(directory="generated_images"), name="generated_images")
+
 
 # CORS - permitir conexiones desde frontend
 app.add_middleware(

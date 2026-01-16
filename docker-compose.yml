@@ -5,27 +5,17 @@ services:
       context: . # Raiz del proyecto
       dockerfile: ./backend/Dockerfile
     ports: 
-      - "5001:5000"
-    environment:
-      - OLLAMA_BASE_URL=http://ollama:11434
-      - OLLAMA_MODEL=neural-chat
-      - FLASK_ENV=development
+      - "5002:5000"
+    env_file: .env
     volumes:
       - ./backend:/app
 
   frontend:
     build: ./frontend
     ports: 
-      - "3000:3000"
+      - "3001:3000"
     environment:
       - REACT_APP_API_URL=http://backend:5000/api
     depends_on:
       backend:
         condition: service_started
-
-  # ollama:
-  #  image: ollama/ollama:latest
-  #  ports:
-  #    - "11434:11434"
-  #  environment:
-  #    - OLLAMA_HOST=0.0.0.0:11434 # se descargará al usar el cliente
