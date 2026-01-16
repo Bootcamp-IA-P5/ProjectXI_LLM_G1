@@ -53,6 +53,18 @@
 /* ========================================
    ESTADO DE CARGA
    ======================================== */
+   
+.output-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius-xl);
+    padding: var(--spacing-2xl);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    animation: slideInRight 0.6s ease-out 0.1s both;
+}
 
 .loading-container {
     display: flex;
