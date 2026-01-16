@@ -15,6 +15,7 @@ class GenerateRequest(BaseModel):
     plataforma: str
     audiencia: str
     informacion_adicional: str = "" 
+    contexto_marca: str = ""
 
 PLATFORM_SIZES = {
     "twitter": {"width": 1200, "height": 630},
@@ -66,7 +67,8 @@ def crew_generate(request: GenerateRequest): # Pydantic model
             tema=request.tema,
             plataforma=request.plataforma,
             audiencia=request.audiencia,
-            contenido_groq=contenido
+            contenido_groq=contenido,
+            contexto_marca=request.contexto_marca
         )
         
         # Backend genera imagen con tamaño segun plataforma

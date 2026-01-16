@@ -3,7 +3,7 @@
 from crewai import Crew, Task
 from agents.gemini_agent import gemini_agent
     
-def run_crew (tema: str, plataforma: str, audiencia: str, contenido_groq: str = None):
+def run_crew (tema: str, plataforma: str, audiencia: str, contenido_groq: str = None, contexto_marca: str = ""):
     """
     Ejecuta el crew multiagente
     -Gemini refina prompt para imagen (si se requiere)
@@ -12,7 +12,7 @@ def run_crew (tema: str, plataforma: str, audiencia: str, contenido_groq: str = 
     
     #Task 1: gemini refina prompt (basado en contenido de Groq)
     task_gemini = Task (
-        description=f"Refina prompt para generar imagen sobre {tema} para {plataforma}",
+        description=f"Refina prompt para generar imagen sobre {tema} para {plataforma}. Contexto de marca: {contexto_marca} ",
         agent = gemini_agent,
         expected_output="Prompt optimizado para Hugging Face"
     )
@@ -27,7 +27,8 @@ def run_crew (tema: str, plataforma: str, audiencia: str, contenido_groq: str = 
         "tema": tema,
         "plataforma": plataforma,
         "audiencia": audiencia,
-        "content": contenido_groq
+        "content": contenido_groq,
+        "contexto_marca": contexto_marca
     })
     
     prompt_refinado = result.raw
