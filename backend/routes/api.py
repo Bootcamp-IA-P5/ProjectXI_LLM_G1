@@ -2,10 +2,11 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel # Para validar JSON
 from agents.crew import run_crew
 from services.image_generator import generate_image
+from rag.rag_system import RAGSystem
 import logging
 
-# from llm.llm_factory import get_llm_client, get_model_name
-# from services.content_generator import ContentGenerator
+# Instanciar RAG globalmente
+rag_system = RAGSystem()
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["generation"])
@@ -62,12 +63,32 @@ def crew_generate(request: GenerateRequest): # Pydantic model
         # contenido = groq_agent.generate(request.tema, request.plataforma..)
         contenido = f"Contenido sobre {request.tema} para {request.plataforma}"
         
-        #Gemini refina prompt
+        # Detectar si es cientifico para RAG
+        temas_cientificos = ["inteligencia artificial", "ia", "clima", "cambio climático", 
+                             "biomedicina", "astrofísica", "física cuántica", "medio ambiente"]
+        es_cientifico = any(tema.lower() in request.tema.lower() for tema in temas_cientificos)
+        
+        # Si es cientifico, usar RAG
+        contexto_cientifico = ""
+        if es_cientifico:
+            contexto_cientifico = rag_system.process_query(request.tema)
+            if contexto_cientifico:
+                logger.info("✅ RAG activado: Usando contexto científico")
+            else:
+                logger.warning("⚠️ RAG fallback: Sin papers disponibles")
+                
+        # Inyectar contexto en el prompt para Gemini
+        contenido_con_contexto = contenido
+        if contexto_cientifico:
+            contenido_con_contexto = f"{contenido}\n\n{contexto_cientifico}"
+
+        
+        #Gemini refina prompt (ahora con contexto cientifico)
         prompt_refinado = run_crew (
             tema=request.tema,
             plataforma=request.plataforma,
             audiencia=request.audiencia,
-            contenido_groq=contenido,
+            contenido_groq=contenido_con_contexto,
             contexto_marca=request.contexto_marca
         )
         
@@ -82,7 +103,8 @@ def crew_generate(request: GenerateRequest): # Pydantic model
         return {
             "contenido": contenido, 
             "image_url": image_url,
-            "status": "success"
+            "status": "success",
+            "rag_activated": es_cientifico and bool(contexto_cientifico) # Opcional: avisar al frontend
         }
     
     except Exception as e:
