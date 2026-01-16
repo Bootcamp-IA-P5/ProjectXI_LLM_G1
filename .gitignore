@@ -154,3 +154,6 @@ htmlcov/
 *.sqlite3
 chromadb/
 vector_store/
+
+
+backend/generated_images/
