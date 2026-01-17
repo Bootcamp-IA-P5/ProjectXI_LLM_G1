@@ -1,15 +1,20 @@
 """Tests for Groq QA Agent"""
 
 import pytest
+import sys
+import os
 
-from src.agents import GroqQAAgent
+# Add backend to path so we can import from backend/agents
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
+
+from agents.groq_qa_agent import GroqQAAgent
 
 
 @pytest.fixture
 def agent_config():
     """Fixture for agent configuration"""
     return {
-        "api_key": "test_key",
+        "api_key": os.getenv("GROQ_API_KEY", "test_key"),
         "model": "mixtral-8x7b-32768"
     }
 
