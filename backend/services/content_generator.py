@@ -8,7 +8,13 @@ logger = logging.getLogger(__name__)
 
 
 class ContentGenerator:
-    """Orquestador: coordina prompts + llm_client usando Factory pattern"""
+    """Orquestador: coordina prompts + llm_client usando Factory pattern
+    
+    Note: To create an llm_client, use:
+        from llm.llm_factory import LLMFactory
+        client = LLMFactory.get_client(provider='groq')
+        generator = ContentGenerator(client)
+    """
 
     def __init__(self, llm_client):
         """
@@ -27,6 +33,29 @@ class ContentGenerator:
             "fr": "Français", 
             "it": "Italiano"
         }
+
+    def _invoke_llm_client(self, prompt: str) -> str:
+        """
+        Invoke LLM client with proper method based on client type.
+        
+        Args:
+            prompt: The prompt to send to the LLM
+            
+        Returns:
+            Generated content as string
+            
+        Raises:
+            ValueError: If client type is not compatible
+        """
+        # For LangChain clients (Groq, Gemini via LangChain)
+        if hasattr(self.llm_client, 'invoke'):
+            response = self.llm_client.invoke(prompt)
+            return response.content if hasattr(response, 'content') else str(response)
+        # For Ollama client
+        elif hasattr(self.llm_client, 'generate'):
+            return self.llm_client.generate(prompt)
+        else:
+            raise ValueError("Cliente LLM no compatible - debe tener método 'invoke' o 'generate'")
 
     def generate_content(self, tema: str, plataforma: str, audiencia: str, 
                          informacion_adicional: str = "", idioma: str = "es") -> str:
@@ -64,17 +93,7 @@ class ContentGenerator:
             )
             
             # 3. GENERACIÓN CON LLM
-            # For LangChain clients (Groq)
-            if hasattr(self.llm_client, 'invoke'):
-                response = self.llm_client.invoke(prompt_final)
-                contenido = response.content if hasattr(response, 'content') else str(response)
-            # For Ollama client
-            elif hasattr(self.llm_client, 'generate'):
-                contenido = self.llm_client.generate(prompt_final)
-            else:
-                raise ValueError("Cliente LLM no compatible")
-            
-            return contenido
+            return self._invoke_llm_client(prompt_final)
 
         except (ValueError, ConnectionError) as e: 
             logger.error(f"Error en generacion: {e}")
@@ -118,15 +137,7 @@ Usa los datos de las noticias anteriores para que el contenido sea actual.
 """
             
             # 4. Generar con LLM
-            if hasattr(self.llm_client, 'invoke'):
-                response = self.llm_client.invoke(prompt_final)
-                contenido = response.content if hasattr(response, 'content') else str(response)
-            elif hasattr(self.llm_client, 'generate'):
-                contenido = self.llm_client.generate(prompt_final)
-            else:
-                raise ValueError("Cliente LLM no compatible")
-            
-            return contenido
+            return self._invoke_llm_client(prompt_final)
             
         except Exception as e:
             logger.error(f"Error en generate_news_content: {e}")

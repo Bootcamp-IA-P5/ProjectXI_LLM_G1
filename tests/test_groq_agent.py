@@ -34,18 +34,13 @@ def test_llm_factory_invalid_provider():
         LLMFactory.get_client(provider="invalid_provider")
 
 
-def test_llm_factory_missing_api_key():
+def test_llm_factory_missing_api_key(monkeypatch):
     """Test that LLM Factory raises error when API key is missing"""
-    # Clear environment variable temporarily
-    original_key = os.environ.pop("GROQ_API_KEY", None)
+    # Remove GROQ_API_KEY from environment
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
     
-    try:
-        with pytest.raises(ValueError, match="GROQ_API_KEY not configured"):
-            LLMFactory.get_client(provider="groq")
-    finally:
-        # Restore original key if it existed
-        if original_key:
-            os.environ["GROQ_API_KEY"] = original_key
+    with pytest.raises(ValueError, match="GROQ_API_KEY not configured"):
+        LLMFactory.get_client(provider="groq")
 
 
 def test_llm_factory_default_provider(test_api_key):
