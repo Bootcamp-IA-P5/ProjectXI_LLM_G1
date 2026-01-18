@@ -8,6 +8,7 @@ export default function App() {
 
     const [datosForm, setDatosForm] = useState(null);
     const [contenidoGenerado, setContenidoGenerado] = useState("");
+    const [imagenGenerada, setImagenGenerada] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [darkMode, setDarkMode] = useState(() => {
@@ -29,20 +30,43 @@ export default function App() {
 
         // setLoading(true)
         setLoading(true);
+        setError("");
+        setContenidoGenerado("");
+        setImagenGenerada("");
 
         // TODO: Llamar api.js
         try {
-            const response = await generateContent(datos);  // generateContent Tambien es async
-            console.log("RESPONSE COMPLETO:", response);
-            console.log("CONTENIDO:", response.contenido);
-            setContenidoGenerado(response.contenido);
-            setError("");
+            const response = await generateContent(datos);
+            console.log("🎉 RESPONSE COMPLETO:", response);
+            console.log("📝 CONTENIDO:", response.contenido);
+            console.log("🖼️ IMAGE_URL:", response.image_url);
+            console.log("✅ Tipo de image_url:", typeof response.image_url);
+
+            if (response.contenido) {
+                setContenidoGenerado(response.contenido);
+
+                // Procesar imagen URL
+                if (response.image_url) {
+                    const imageUrl = response.image_url.startsWith('http')
+                        ? response.image_url
+                        : `http://localhost:5001${response.image_url}`;
+                    console.log("🔗 URL final de imagen:", imageUrl);
+                    setImagenGenerada(imageUrl);
+                } else {
+                    console.warn("⚠️ No hay image_url en la respuesta");
+                    setImagenGenerada("");
+                }
+                setError("");
+            } else {
+                setError("No se generó contenido");
+            }
 
         } catch (error) {
-            console.error("ERROR:", error);  // ← Y AQUÍ
-            setError(error.message);
-            setContenidoGenerado("")
-
+            console.error("❌ ERROR:", error);
+            console.error("📍 Error Message:", error.message);
+            setError(error.message || "Error desconocido");
+            setContenidoGenerado("");
+            setImagenGenerada("");
         } finally {
             setLoading(false);
         }
@@ -70,6 +94,7 @@ export default function App() {
                     <div className="output-container">
                         <OutputDisplay
                             contenido={contenidoGenerado}
+                            imagen={imagenGenerada}
                             loading={loading}
                             error={error}
                         />

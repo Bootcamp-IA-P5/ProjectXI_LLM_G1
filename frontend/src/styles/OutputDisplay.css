@@ -41,10 +41,37 @@
     animation: bounce 2s infinite;
 }
 
+/* ========================================
+   IMAGEN GENERADA
+   ======================================== */
+.output-image-container {
+    width: 100%;
+    margin-bottom: var(--spacing-lg);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    background: var(--light-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 250px;
+    border: 2px solid var(--border-color);
+}
+
+.output-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    max-height: 400px;
+    display: block;
+}
+
 @keyframes bounce {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: translateY(0);
     }
+
     50% {
         transform: translateY(-5px);
     }
@@ -53,7 +80,7 @@
 /* ========================================
    ESTADO DE CARGA
    ======================================== */
-   
+
 .output-card {
     background: var(--card-bg);
     border-radius: var(--border-radius-xl);

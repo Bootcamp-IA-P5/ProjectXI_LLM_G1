@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import '../styles/OutputDisplay.css';
 
-export default function OutputDisplay({ contenido, loading, error }) {
+export default function OutputDisplay({ contenido, imagen, loading, error }) {
     const [copied, setCopied] = useState(false);
+
+    // Debug: Ver qué props recibimos
+    console.log("OutputDisplay recibió - imagen:", imagen, "contenido:", contenido);
 
     function handleCopy() {
         if (contenido) {
@@ -54,6 +57,26 @@ export default function OutputDisplay({ contenido, loading, error }) {
 
             {!loading && !error && contenido && (
                 <>
+                    {imagen ? (
+                        <div className="output-image-container">
+                            <img
+                                src={imagen}
+                                alt="Imagen generada"
+                                className="output-image"
+                                onError={(e) => {
+                                    console.error("❌ Error cargando imagen desde:", imagen);
+                                    e.target.style.display = 'none';
+                                }}
+                                onLoad={() => {
+                                    console.log("✅ Imagen cargada correctamente desde:", imagen);
+                                }}
+                            />
+                        </div>
+                    ) : (
+                        <div className="output-image-container" style={{ background: '#e2e8f0', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <p>ℹ️ Imagen no disponible (URL: {imagen || 'undefined'})</p>
+                        </div>
+                    )}
                     <div className="output-content">
                         <p className="output-text">{contenido}</p>
                     </div>

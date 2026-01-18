@@ -1,8 +1,8 @@
 """Content generation service using LLM Factory pattern"""
 
 import logging
-from llm.prompts import get_full_prompt
-from services.news_service import NewsService
+from ..llm.prompts import get_full_prompt
+from .news_service import NewsService
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +85,7 @@ class ContentGenerator:
         dirigido a una audiencia de {audiencia}. 
         Usa los datos de las noticias anteriores para que el contenido sea actual.
         """
-        Generar contenido con contexto de noticias actuales (RAG)
+        # Generar contenido con contexto de noticias actuales (RAG)
         
         # 4. Generar con llm
         return self.llm_client.generate(prompt_final)
