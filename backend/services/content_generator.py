@@ -17,14 +17,8 @@ class ContentGenerator:
     """
 
     def __init__(self, llm_client):
-        """
-        Recibir cliente LLM (inyeccion de dependencia desde Factory)
-        
-        Args:
-            llm_client: Cliente LLM (Groq, Gemini, u Ollama)
-        """
+        """Recibir cliente Groq (inyeccion de dependencia)"""
         self.llm_client = llm_client
-        self.news_service = NewsService()
         self.plataformas_soportadas = ["twitter", "blog", "instagram", "linkedin"]
         # Mapeo de códigos a nombres para que el LLM lo entienda mejor
         self.idiomas_soportados = {
@@ -33,54 +27,21 @@ class ContentGenerator:
             "fr": "Français", 
             "it": "Italiano"
         }
+        self.news_service = NewsService() # Instanciamos el servicio
 
     def _invoke_llm_client(self, prompt: str) -> str:
         """
-        Invoke LLM client with proper method based on client type.
-        
-        Args:
-            prompt: The prompt to send to the LLM
-            
-        Returns:
-            Generated content as string
-            
-        Raises:
-            ValueError: If client type is not compatible
-        """
-        # For LangChain clients (Groq, Gemini via LangChain)
-        if hasattr(self.llm_client, 'invoke'):
-            response = self.llm_client.invoke(prompt)
-            return response.content if hasattr(response, 'content') else str(response)
-        # For Ollama client
-        elif hasattr(self.llm_client, 'generate'):
-            return self.llm_client.generate(prompt)
-        else:
-            raise ValueError("Cliente LLM no compatible - debe tener método 'invoke' o 'generate'")
-
-    def generate_content(self, tema: str, plataforma: str, audiencia: str, 
-                         informacion_adicional: str = "", idioma: str = "es") -> str:
-        """
         Generar contenido multilingüe y personalizado
-        
-        Args:
-            tema: Tema del contenido
-            plataforma: Plataforma de destino
-            audiencia: Audiencia objetivo
-            informacion_adicional: Información extra opcional
-            idioma: Código de idioma (es, en, fr, it)
-            
-        Returns:
-            Contenido generado
-            
-        Raises:
-            ValueError: Si idioma no soportado
-            ConnectionError: Si falla la generación
         """
-        try: 
-            # 1. VALIDACIÓN DE IDIOMA
-            if idioma not in self.idiomas_soportados:
-                raise ValueError(f"Idioma '{idioma}' no soportado.")
-            
+        # 1. VALIDACIÓN DE IDIOMA
+        # Comprobamos si el código de idioma enviado por el frontend existe en nuestro diccionario
+        if idioma not in self.idiomas_soportados:
+            raise ValueError(f"Idioma '{idioma}' no soportado. Usa: {list(self.idiomas_soportados.keys())}")
+
+        if plataforma not in self.plataformas_soportadas:
+            raise ValueError(f"Palataforma '{plataforma}' no soportada. Usa: {self.plataformas_soportadas}")
+        
+        try:     
             nombre_idioma = self.idiomas_soportados[idioma]
             
             # 2. SELECCIÓN DEL PROMPT
@@ -93,52 +54,97 @@ class ContentGenerator:
             )
             
             # 3. GENERACIÓN CON LLM
-            return self._invoke_llm_client(prompt_final)
-
-        except (ValueError, ConnectionError) as e: 
-            logger.error(f"Error en generacion: {e}")
+            # El cliente llm recibe el prompt ya traducido y configurado
+            contenido = self.llm_client.generate(prompt_final)
+            
+            return contenido
+        
+        except ValueError as e:
+            logger.error(f"Error de validación: {e}")
             raise
-
         except Exception as e:
-            logger.error(f"Error inesperado: {e}")
+            logger.error(f"Error generando contenido: {e}")
             raise ConnectionError(f"Error al generar contenido: {e}")
-
-    def generate_news_content(self, tema: str, plataforma: str, audiencia: str, idioma: str = "es") -> str:
+        
+    def generate_news_content(self, tema: str, plataforma: str, audiencia: str, idioma: str = "es"):
+        # 1. Obtener noticias en el idioma seleccionado (RAG)
+        noticias_frescas = self.news_service.get_financial_news(tema, idioma)
+        
+        # 2. Obtener el nombre completo del idioma (ej: "Français")
+        nombre_idioma = self.idiomas_soportados.get(idioma, "Castellano")
+        
+        # 3. Construir el Prompt Maestro (Multilingüe + Noticias)
+        prompt_final = f"""
+        INSTRUCCIÓN DE IDIOMA: Debes escribir exclusivamente en {nombre_idioma}.
+        
+        CONTEXTO ACTUAL (NOTICIAS):
+        {noticias_frescas}
+        
+        TAREA:
+        Actúa como un analista financiero experto. Crea un post para {plataforma} 
+        dirigido a una audiencia de {audiencia}. 
+        Usa los datos de las noticias anteriores para que el contenido sea actual.
         """
         Generar contenido con contexto de noticias actuales (RAG)
         
-        Args:
-            tema: Tema del contenido
-            plataforma: Plataforma de destino
-            audiencia: Audiencia objetivo
-            idioma: Código de idioma
-            
-        Returns:
-            Contenido generado con contexto de noticias
-        """
-        try:
-            # 1. Obtener noticias en el idioma seleccionado (RAG)
-            noticias_frescas = self.news_service.get_financial_news(tema, idioma)
-            
-            # 2. Obtener el nombre completo del idioma
-            nombre_idioma = self.idiomas_soportados.get(idioma, "Castellano")
-            
-            # 3. Construir el Prompt Maestro (Multilingüe + Noticias)
-            prompt_final = f"""
-INSTRUCCIÓN DE IDIOMA: Debes escribir exclusivamente en {nombre_idioma}.
+        # 4. Generar con llm
+        return self.llm_client.generate(prompt_final)
+    
+# class ContentGenerator: //el de ollama, nah
+#     """Orquestador: coordina prompts + ollama_client"""
 
-CONTEXTO ACTUAL (NOTICIAS):
-{noticias_frescas}
+#     def __init__(self, ollama_client: OllamaClient):
+#         self.ollama_client = ollama_client
+#         self.plataformas_soportadas = ["twitter", "blog", "instagram", "linkedin"]
+#         # Mapeo de códigos a nombres para que el LLM lo entienda mejor
+#         self.idiomas_soportados = {
+#             "es": "Castellano", 
+#             "en": "English", 
+#             "fr": "Français", 
+#             "it": "Italiano"
+# #         }
 
-TAREA:
-Actúa como un analista financiero experto. Crea un post para {plataforma} 
-dirigido a una audiencia de {audiencia}. 
-Usa los datos de las noticias anteriores para que el contenido sea actual.
-"""
+#     def generate_content(self, tema: str, plataforma: str, audiencia: str, 
+#                          informacion_adicional: str = "", idioma: str = "es") -> str:
+#         """
+#         Generar contenido multilingüe y personalizado
+#         """
+#         try: 
+#             # 1. VALIDACIÓN DE IDIOMA
+#             # Comprobamos si el código de idioma enviado por el frontend existe en nuestro diccionario
+#             if idioma not in self.idiomas_soportados:
+#                 raise ValueError(f"Idioma '{idioma}' no soportado.")
             
-            # 4. Generar con LLM
-            return self._invoke_llm_client(prompt_final)
+#             nombre_idioma = self.idiomas_soportados[idioma]
             
-        except Exception as e:
-            logger.error(f"Error en generate_news_content: {e}")
-            raise
+#             # 2. SELECCIÓN DEL PROMPT (Inyectando el idioma y la info extra)
+#             # Pasamos todos los parámetros a get_full_prompt para construir la instrucción final
+#             prompt_final = get_full_prompt(
+#                 tema=tema, 
+#                 audiencia=audiencia, 
+#                 plataforma=plataforma, 
+#                 informacion_adicional=informacion_adicional, 
+#                 idioma=nombre_idioma
+#             )
+            
+#             # Paso 1: Obtener prompt final (combina SYSTEM + especifico)
+#             prompt_final = get_full_prompt(tema, audiencia, plataforma, informacion_adicional)
+            
+#             # Paso 2: Generar con Groq
+#             contenido = self.groq_client.chat.completions.create(prompt_final)
+            
+#             return contenido
+
+#         except Exception as e:
+#             logger.error(f"Error en el generador: {e}")
+#             raise
+
+#         except (ValueError, ConnectionError) as e: 
+#             # Si son nuestras excepciones, solo loguear y relanzar
+#             logger.error(f"Error en generacion: {e}")
+#             raise
+
+#         except Exception as e:
+#             # Si es otra excepcion inesperada, loguear y convertir
+#             logger.error(f"Error inesperado: {e}")
+#             raise ConnectionError(f"Error al generar contenido: {e}")

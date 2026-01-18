@@ -5,6 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
 import logging
+from services.content_generator import ContentGenerator
+from llm.groq_client import GroqClient
+
 
 load_dotenv()
 
@@ -19,6 +22,12 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Instanciar cliente LLM global
+groq_api_key = os.getenv("GROQ_API_KEY")
+groq_client = GroqClient(api_key=groq_api_key)
+content_generator = ContentGenerator(groq_client) 
+
+# Registrar rutas
 from routes.api import router
 app.include_router(router)
 
