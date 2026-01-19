@@ -1,8 +1,8 @@
 // Esta función TARDA (espera respuesta del backend)
 // Por eso es "async", necesitamos decirle a JS "espera a que termine"
-export async function generateContent (datos) {
+export async function generateContent(datos) {
 
-    const url = 'http://localhost:5001/api/generate'; //donde envias
+    const url = 'http://localhost:8000/api/generate'; // Backend en puerto 8000
 
     try { // maneja errores
         const response = await fetch(url, { // hace la peticion y response lo que vuelve del servidor
@@ -19,7 +19,7 @@ export async function generateContent (datos) {
 
         console.log("RESPUESTA DEL BACKEND:", result);
         console.log("CONTENIDO:", result.contenido);
-        
+
         // Chequear si response fue OK
         if (!response.ok) {
             throw new Error(result.detail || "Error del servidor");
@@ -27,7 +27,7 @@ export async function generateContent (datos) {
 
         console.log(result);
         return result;
-    
+
     } catch (error) {
         console.error("❌ ERROR EN API.JS:", error);  // ← AQUÍ
         console.error("Mensaje:", error.message);     // ← Y AQUÍ

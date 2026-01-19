@@ -39,21 +39,19 @@ export default function App() {
             const response = await generateContent(datos);
             console.log("🎉 RESPONSE COMPLETO:", response);
             console.log("📝 CONTENIDO:", response.contenido);
-            console.log("🖼️ IMAGE_URL:", response.image_url);
+            console.log("🖼️ IMAGE_URL RAW:", response.image_url);
             console.log("✅ Tipo de image_url:", typeof response.image_url);
 
             if (response.contenido) {
                 setContenidoGenerado(response.contenido);
 
-                // Procesar imagen URL
-                if (response.image_url) {
-                    const imageUrl = response.image_url.startsWith('http')
-                        ? response.image_url
-                        : `http://localhost:5001${response.image_url}`;
-                    console.log("🔗 URL final de imagen:", imageUrl);
-                    setImagenGenerada(imageUrl);
+                // Procesar imagen URL - ya viene completa del backend
+                if (response.image_url && response.image_url.trim() !== "") {
+                    console.log("🔗 URL de imagen a setear:", response.image_url);
+                    setImagenGenerada(response.image_url);
+                    console.log("✅ setImagenGenerada ejecutado con:", response.image_url);
                 } else {
-                    console.warn("⚠️ No hay image_url en la respuesta");
+                    console.warn("⚠️ No hay image_url válida en la respuesta");
                     setImagenGenerada("");
                 }
                 setError("");
