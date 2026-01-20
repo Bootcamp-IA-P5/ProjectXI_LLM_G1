@@ -1,7 +1,6 @@
 """Groq API Client with Fallback"""
 import logging
 from langchain_groq import ChatGroq
-import os
 
 logger = logging.getLogger(__name__)
 
