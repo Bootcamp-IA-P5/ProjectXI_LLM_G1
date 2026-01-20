@@ -1,4 +1,4 @@
-# ProjectXI LLM - CIntelligent Content Generation with AI
+# ProjectXI LLM - Intelligent Content Generation with AI
 
 **Full-stack application for generating personalized content and images for multiple social platforms using advanced LLM providers.**
 
