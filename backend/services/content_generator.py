@@ -2,6 +2,8 @@ from llm.groq_client import GroqClient
 from llm.prompts import get_full_prompt
 import logging
 from services.news_service import NewsService
+from services.guardrails import ContentGuardrails, SafetyLevel, ContentValidationError
+
 
 logger = logging.getLogger(__name__)
 
@@ -111,30 +113,148 @@ class ContentGenerator:
             logger.error(f"Error inesperado: {e}")
             raise ConnectionError(f"Error al generar contenido: {e}")
         
-class ContentGenerator:
-    def __init__(self, ollama_client: OllamaClient):
-        self.ollama_client = ollama_client
-        self.news_service = NewsService() # Instanciamos el servicio
-
-    def generate_news_content(self, tema: str, plataforma: str, audiencia: str, idioma: str = "es"):
-        # 1. Obtener noticias en el idioma seleccionado (RAG)
-        noticias_frescas = self.news_service.get_financial_news(tema, idioma)
+        class ContentGenerator:
+    def __init__(self, groq_client: GroqClient):
+        self.groq_client = groq_client
+        self.guardrails = ContentGuardrails(safety_level=SafetyLevel.MODERATE)
+        self.plataformas_soportadas = ["twitter", "blog", "instagram", "linkedin"]
+        self.idiomas_soportados = {
+            "es": "Castellano", 
+            "en": "English", 
+            "fr": "Français", 
+            "it": "Italiano"
+        }
+    def __init__(self, safety_level: SafetyLevel = SafetyLevel.MODERATE):
+        self.safety_level = safety_level
+        self.max_length = 10000
+        self.min_length = 10
+        self.bias_detector = BiasDetector()  # ← AGREGAR
+    
+    def generate_content(self, tema: str, plataforma: str, audiencia: str, 
+                        informacion_adicional: str = "", idioma: str = "es") -> str:
+        """Generar con validación de guardrails"""
         
-        # 2. Obtener el nombre completo del idioma (ej: "Français")
-        nombre_idioma = self.idiomas_soportados.get(idioma, "Castellano")
+        # Validar entrada
+        if plataforma not in self.plataformas_soportadas:
+            raise ValueError(f"Plataforma '{plataforma}' no soportada")
         
-        # 3. Construir el Prompt Maestro (Multilingüe + Noticias)
-        prompt_final = f"""
-        INSTRUCCIÓN DE IDIOMA: Debes escribir exclusivamente en {nombre_idioma}.
+        if idioma not in self.idiomas_soportados:
+            raise ValueError(f"Idioma '{idioma}' no soportado")
         
-        CONTEXTO ACTUAL (NOTICIAS):
-        {noticias_frescas}
+        # Construir prompt
+        nombre_idioma = self.idiomas_soportados[idioma]
+        prompt_final = get_full_prompt(
+            tema=tema,
+            audiencia=audiencia,
+            plataforma=plataforma,
+            informacion_adicional=informacion_adicional,
+            idioma=nombre_idioma
+        )
         
-        TAREA:
-        Actúa como un analista financiero experto. Crea un post para {plataforma} 
-        dirigido a una audiencia de {audiencia}. 
-        Usa los datos de las noticias anteriores para que el contenido sea actual.
-        """
+        # Generar con Groq
+        contenido = self.groq_client.generate(prompt_final)
         
-        # 4. Generar con Ollama local
-        return self.ollama_client.generate(prompt_final)
+        # **APLICAR GUARDRAILS**
+        validacion = self.guardrails.validate_content(contenido, plataforma)
+        
+        if not validacion["valid"]:
+            logger.warning(f"Contenido rechazado. Problemas: {validacion['issues']}")
+            raise ContentValidationError(
+                f"El contenido no cumple estándares: {', '.join(validacion['issues'])}"
+            )
+        
+        logger.info(f"Contenido validado exitosamente para {plataforma}")
+        return validacion["cleaned_content"]
+    
+        def generate_content(self, tema: str, plataforma: str, audiencia: str, 
+                            informacion_adicional: str = "", idioma: str = "es") -> dict:
+            """
+            Generar contenido con validación de guardrails y análisis de sesgos
+            
+            Returns:
+                {
+                    "contenido": str,
+                    "validado": bool,
+                    "bias_report": dict,
+                    "issues": list
+                }
+            """
+        try:
+            # 1. VALIDAR ENTRADA
+            if plataforma not in self.plataformas_soportadas:
+                raise ValueError(f"Plataforma '{plataforma}' no soportada")
+            
+            if idioma not in self.idiomas_soportados:
+                raise ValueError(f"Idioma '{idioma}' no soportado")
+            
+            # 2. CONSTRUIR PROMPT
+            nombre_idioma = self.idiomas_soportados[idioma]
+            prompt_final = self.get_full_prompt(
+                tema=tema,
+                audiencia=audiencia,
+                plataforma=plataforma,
+                informacion_adicional=informacion_adicional,
+                idioma=nombre_idioma
+            )
+            
+            # 3. GENERAR CON GROQ
+            logger.info(f"Generando contenido para {plataforma}...")
+            contenido = self.groq_client.generate(prompt_final)
+            
+            # 4. APLICAR GUARDRAILS (validación básica)
+            logger.info("Aplicando guardrails...")
+            validacion = self.guardrails.validate_content(contenido, plataforma)
+            
+            if not validacion["valid"]:
+                logger.warning(f"Contenido rechazado. Problemas: {validacion['issues']}")
+                raise ContentValidationError(
+                    f"El contenido no cumple estándares: {', '.join(validacion['issues'])}"
+                )
+            
+            # 5. ANALIZAR SESGOS
+            logger.info("Analizando sesgos...")
+            bias_report = validacion.get("bias_report", {})
+            
+            if bias_report.get("has_bias"):
+                logger.warning(f"Sesgos detectados: {bias_report['bias_types']}")
+            
+            # 6. RETORNAR RESULTADO COMPLETO
+            logger.info(f"✓ Contenido validado exitosamente para {plataforma}")
+            
+            return {
+                "contenido": validacion["cleaned_content"],
+                "validado": True,
+                "bias_report": bias_report,
+                "issues": [],
+                "status": "success"
+            }
+        
+        except ContentValidationError as e:
+            logger.error(f"Error de validación: {str(e)}")
+            return {
+                "contenido": None,
+                "validado": False,
+                "bias_report": None,
+                "issues": [str(e)],
+                "status": "validation_error"
+            }
+        
+        except ValueError as e:
+            logger.error(f"Error de entrada: {str(e)}")
+            return {
+                "contenido": None,
+                "validado": False,
+                "bias_report": None,
+                "issues": [str(e)],
+                "status": "input_error"
+            }
+        
+        except Exception as e:
+            logger.error(f"Error inesperado: {str(e)}")
+            return {
+                "contenido": None,
+                "validado": False,
+                "bias_report": None,
+                "issues": [f"Error generando contenido: {str(e)}"],
+                "status": "error"
+            }

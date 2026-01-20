@@ -51,4 +51,24 @@ export default function App() {
             />
         </div>
     )
+
+    async function handleFormSubmit(datos) {
+        setLoading(true);
+        try {
+            const response = await generateContent(datos);
+            setContenidoGenerado(response.contenido);
+            setError("");
+        } catch (error) {
+            // Mostrar detalles de validación
+            const mensaje = error.message || "Error desconocido";
+            if (mensaje.includes("no cumple estándares")) {
+                setError(`⚠️ ${mensaje}`);
+            } else {
+                setError(`❌ ${mensaje}`);
+            }
+            setContenidoGenerado("");
+        } finally {
+            setLoading(false);
+        }
+    }
 }
