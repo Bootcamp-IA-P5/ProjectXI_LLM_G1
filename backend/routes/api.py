@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel # Para validar JSON
-# from backend.agents.crew import run_crew  # TODO: Uncomment after crewai is installed
+from backend.agents.crew import run_crew  # TODO: Uncomment after crewai is installed
 from ..services.image_generator import generate_image
 from ..llm.prompts import get_full_prompt
-# from rag.rag_system import RAGSystem  # Comentado temporalmente
+from rag.rag_system import RAGSystem  # Comentado temporalmente
 import logging
 import os
 
