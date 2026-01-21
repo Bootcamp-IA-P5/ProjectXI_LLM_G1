@@ -184,8 +184,20 @@ class RAGSystem:
         
         for idx, paper in enumerate(papers, 1):
             try:
-                # Combinar título + abstract + contenido
-                text = f"{paper.get('title', '')} {paper.get('abstract', '')} {paper.get('content', '')}"
+                # Combinar título + abstract + contenido con separadores y omitiendo vacíos
+                parts = []
+                title = paper.get('title', '') or ''
+                abstract = paper.get('abstract', '') or ''
+                content = paper.get('content', '') or ''
+
+                if title.strip():
+                    parts.append(title.strip())
+                if abstract.strip():
+                    parts.append(abstract.strip())
+                if content.strip():
+                    parts.append(content.strip())
+
+                text = "\n\n".join(parts)
                 
                 logger.info(f"📚 Procesando paper {idx}/{len(papers)}: {paper.get('title', 'Unknown')[:50]}...")
 
