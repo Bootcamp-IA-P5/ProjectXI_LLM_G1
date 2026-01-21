@@ -1,12 +1,20 @@
-from llm.groq_client import GroqClient
-from llm.prompts import get_full_prompt
+"""Content generation service using LLM Factory pattern"""
+
 import logging
-from services.news_service import NewsService
+from ..llm.prompts import get_full_prompt
+from .news_service import NewsService
 
 logger = logging.getLogger(__name__)
 
+
 class ContentGenerator:
-    """Orquestador: coordina prompts + groq_client"""
+    """Orquestador: coordina prompts + llm_client usando Factory pattern
+    
+    Note: To create an llm_client, use:
+        from llm.llm_factory import LLMFactory
+        client = LLMFactory.get_client(provider='groq')
+        generator = ContentGenerator(client)
+    """
 
     def __init__(self, llm_client):
         """Recibir cliente Groq (inyeccion de dependencia)"""
@@ -21,8 +29,7 @@ class ContentGenerator:
         }
         self.news_service = NewsService() # Instanciamos el servicio
 
-    def generate_content(self, tema: str, plataforma: str, audiencia: str, 
-            informacion_adicional: str = "", idioma: str = "es") -> str:
+    def _invoke_llm_client(self, prompt: str) -> str:
         """
         Generar contenido multilingüe y personalizado
         """
@@ -37,8 +44,7 @@ class ContentGenerator:
         try:     
             nombre_idioma = self.idiomas_soportados[idioma]
             
-            # 2. SELECCIÓN DEL PROMPT (Inyectando el idioma y la info extra)
-            # Pasamos todos los parámetros a get_full_prompt para construir la instrucción final
+            # 2. SELECCIÓN DEL PROMPT
             prompt_final = get_full_prompt(
                 tema=tema, 
                 audiencia=audiencia, 
@@ -79,6 +85,7 @@ class ContentGenerator:
         dirigido a una audiencia de {audiencia}. 
         Usa los datos de las noticias anteriores para que el contenido sea actual.
         """
+        # Generar contenido con contexto de noticias actuales (RAG)
         
         # 4. Generar con llm
         return self.llm_client.generate(prompt_final)

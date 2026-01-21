@@ -1,12 +1,12 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from routes.api import router
+from .routes.api import router
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
 import logging
-from services.content_generator import ContentGenerator
-from llm.groq_client import GroqClient
+from .services.content_generator import ContentGenerator
+from .llm.groq_client import GroqClient
 
 
 load_dotenv()
@@ -28,8 +28,19 @@ groq_client = GroqClient(api_key=groq_api_key)
 content_generator = ContentGenerator(groq_client) 
 
 # Registrar rutas
-from routes.api import router
+from .routes.api import router
 app.include_router(router)
+
+# Endpoint raíz
+@app.get("/")
+def root():
+    """Endpoint raíz de la API"""
+    return {
+        "message": "ProjectXI LLM API",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/health"
+    }
 
 # archivos estaticos de imagenes generadas
 app.mount("/generated_images", StaticFiles(directory="generated_images"), name="generated_images")
