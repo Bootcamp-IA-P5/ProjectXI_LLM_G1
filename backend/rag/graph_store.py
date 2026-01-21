@@ -33,6 +33,7 @@ class GraphStore:
         Inicializar almacen de grafo
         """
         
+        self.graph_file = graph_file
         self.graph = nx.DiGraph()   # Directed Graph, las relaciones tienen direccion
         self.load_graph()           # Cargar grafo anterior si existe
         
