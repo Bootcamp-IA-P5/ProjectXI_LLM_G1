@@ -14,6 +14,7 @@ class GraphQueryEngine:
         """
         
         self.graph_store = graph_store
+        self.entity_extractor = EntityExtractor()  # Reutilizar instancia
         logger.info("✅ GraphQueryEngine inicializado")
 
     def query_by_entity(self, entity: str) -> Dict:
@@ -139,11 +140,8 @@ class GraphQueryEngine:
         }
         """
         
-        from rag.entity_extractor import EntityExtractor
-        
-        # Paso 1: Extraer entidades de la query
-        extractor = EntityExtractor()
-        extracted_entities = extractor.extract_entities(query_text, max_entities=5)
+        # Paso 1: Extraer entidades de la query usando instancia reutilizable
+        extracted_entities = self.entity_extractor.extract_entities(query_text, max_entities=5)
         
         if not extracted_entities:
             logger.warning(f"⚠️ No se extrajeron entidades de la query")
