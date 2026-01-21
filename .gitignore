@@ -155,5 +155,9 @@ htmlcov/
 chromadb/
 vector_store/
 
+# ============================================
+# RAG DATA & CACHE
+# ============================================
+backend/rag/data/
 
 backend/generated_images/

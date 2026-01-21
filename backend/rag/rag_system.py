@@ -9,6 +9,7 @@ from rag.retriever import Retriever
 from rag.entity_extractor import EntityExtractor
 from rag.graph_store import GraphStore
 from rag.graph_query import GraphQueryEngine
+from rag.entity_cache import EntityExtractionCache
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,7 @@ class RAGSystem:
         self.entity_extractor = EntityExtractor()
         self.graph_store = GraphStore()
         self.graph_query_engine = GraphQueryEngine(self.graph_store)
+        self.entity_cache = EntityExtractionCache()
         
         logger.info("✅ RAG System inicializado (Vector + Graph)")
         
@@ -54,7 +56,7 @@ class RAGSystem:
             # Paso 1: Descargar papers de ArXiv
             papers = self.arxiv_loader.search_and_download(query)
             if not papers:
-                logger.warning(f"⚠️ Sin papers encontrados, fallback a sin RAG")
+                logger.warning("⚠️ Sin papers encontrados, fallback a sin RAG")
                 return "" # Devuelve contexto vacio, se usará sin RAG
             
             # Paso 2: Dividir en chunks
@@ -76,7 +78,7 @@ class RAGSystem:
                 vector_context = self._format_context(similar_chunks)
                 logger.info(f"✅ Vector RAG: {len(similar_chunks)} chunks similares")
             else:
-                logger.warning(f"⚠️ No chunks similares encontrados")
+                logger.warning("⚠️ No chunks similares encontrados")
                 
             # ============================================
             # PARTE 2: GRAPH RAG (NUEVO) ✅
@@ -172,8 +174,8 @@ class RAGSystem:
         Construir grafo de conceptos a partir de papers
         
         Para cada paper:
-        1. Extraer entidades (conceptos clave)
-        2. Extraer relaciones entre entidades
+        1. Extraer entidades (conceptos clave) - con cache para evitar llamadas LLM redundantes
+        2. Extraer relaciones entre entidades - con cache para evitar llamadas LLM redundantes
         3. Agregar al grafo
         4. Guardar grafo
         """
@@ -201,8 +203,19 @@ class RAGSystem:
                 
                 logger.info(f"📚 Procesando paper {idx}/{len(papers)}: {paper.get('title', 'Unknown')[:50]}...")
 
-                # Extraer entidades y relaciones
-                graph_data = self.entity_extractor.extract_graph_data(text)
+                # Verificar si ya tenemos resultados en cache
+                cached_result = self.entity_cache.get(text)
+                
+                if cached_result:
+                    # Usar resultados cacheados (evita 2 llamadas LLM)
+                    graph_data = cached_result
+                    logger.info(f"✅ Usando cache - {len(graph_data['entities'])} entidades (sin llamadas LLM)")
+                else:
+                    # Extraer entidades y relaciones con LLM
+                    graph_data = self.entity_extractor.extract_graph_data(text)
+                    
+                    # Guardar en cache para futuras consultas
+                    self.entity_cache.put(text, graph_data["entities"], graph_data["relationships"])
                 
                 if graph_data["entities"]:
                     # Agregar al grafo
@@ -211,16 +224,18 @@ class RAGSystem:
                         relationships=graph_data["relationships"]
                     )
 
-                    logger.info(f"✅ {len(graph_data['entities'])} entidades extraídas de paper {idx}")
+                    logger.info(f"✅ {len(graph_data['entities'])} entidades agregadas de paper {idx}")
             
             except Exception as e:
                 logger.error(f"❌ Error procesando paper {idx}: {e}")
                 continue
         
-        # Guardar grafo después de procesar todos los papers
+        # Guardar grafo y cache después de procesar todos los papers
         self.graph_store.save_graph()
+        self.entity_cache.save_cache()
         stats = self.graph_store.get_stats()
-        logger.info(f"✅ Grafo guardado. Stats: {stats}")
+        cache_stats = self.entity_cache.get_stats()
+        logger.info(f"✅ Grafo guardado. Stats: {stats}, Cache: {cache_stats}")
 
     def _combine_contexts(self, vector_context: str, graph_context: str, query: str) -> str:
         """
