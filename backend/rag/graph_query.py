@@ -233,8 +233,26 @@ class GraphQueryEngine:
         
         # Contextos de entidades
         for entity, ctx in entity_contexts.items():
-            if "context" in ctx:
-                formatted += ctx["context"] + "\n"
+            context_text = None
+
+            # Caso 1: el valor es directamente una cadena de contexto
+            if isinstance(ctx, str):
+                context_text = ctx
+
+            # Caso 2: el valor es un diccionario con distintas posibles estructuras
+            elif isinstance(ctx, dict):
+                # Preferir contexto directo si existe y es cadena
+                direct_context = ctx.get("context")
+                if isinstance(direct_context, str):
+                    context_text = direct_context
+                # Alternativamente, usar contexto de una entidad similar si está disponible
+                elif "similar_found" in ctx and isinstance(ctx["similar_found"], dict):
+                    similar_ctx = ctx["similar_found"].get("context")
+                    if isinstance(similar_ctx, str):
+                        context_text = similar_ctx
+
+            if context_text:
+                formatted += context_text + "\n"
         
         # Contextos de relaciones
         if relationship_context:
