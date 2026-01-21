@@ -2,7 +2,7 @@
 // Por eso es "async", necesitamos decirle a JS "espera a que termine"
 export async function generateContent(datos) {
 
-    const url = 'http://localhost:8000/api/generate'; // Backend en puerto 8000
+    const url = 'http://localhost:5001/api/generate'; // Backend en puerto 5001 (por defecto)
 
     try { // maneja errores
         const response = await fetch(url, { // hace la peticion y response lo que vuelve del servidor
