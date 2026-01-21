@@ -142,7 +142,7 @@ class GraphStore:
         logger.info(f"✅ {len(neighbors_info['outgoing'])} relaciones salientes, {len(neighbors_info['incoming'])} entrantes (profundidad={depth})")
         return neighbors_info
     
-    def _collect_outgoing_neighbors(self, entity: str, max_depth: int, current_depth: int, visited: set, results: List):
+    def _collect_outgoing_neighbors(self, entity: str, max_depth: int, current_depth: int, visited: set, results: List[Dict]):
         """Helper para recolectar vecinos salientes recursivamente"""
         if current_depth > max_depth:
             return
@@ -161,7 +161,7 @@ class GraphStore:
                 if current_depth < max_depth:
                     self._collect_outgoing_neighbors(neighbor, max_depth, current_depth + 1, visited, results)
     
-    def _collect_incoming_neighbors(self, entity: str, max_depth: int, current_depth: int, visited: set, results: List):
+    def _collect_incoming_neighbors(self, entity: str, max_depth: int, current_depth: int, visited: set, results: List[Dict]):
         """Helper para recolectar vecinos entrantes recursivamente"""
         if current_depth > max_depth:
             return
