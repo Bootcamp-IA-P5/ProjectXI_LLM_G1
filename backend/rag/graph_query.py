@@ -249,10 +249,26 @@ class GraphQueryEngine:
                 if isinstance(direct_context, str):
                     context_text = direct_context
                 # Alternativamente, usar contexto de una entidad similar si está disponible
-                elif "similar_found" in ctx and isinstance(ctx["similar_found"], dict):
-                    similar_ctx = ctx["similar_found"].get("context")
-                    if isinstance(similar_ctx, str):
-                        context_text = similar_ctx
+                elif "similar_found" in ctx:
+                    similar_data = ctx["similar_found"]
+                    # Caso A: similar_found es un diccionario con un campo "context"
+                    if isinstance(similar_data, dict):
+                        similar_ctx = similar_data.get("context")
+                        if isinstance(similar_ctx, str):
+                            context_text = similar_ctx
+                    # Caso B: similar_found es una lista (por ejemplo, resultado de search_by_keyword)
+                    elif isinstance(similar_data, list):
+                        for item in similar_data:
+                            # Si el ítem es un diccionario con "context", usarlo
+                            if isinstance(item, dict):
+                                similar_ctx = item.get("context")
+                                if isinstance(similar_ctx, str):
+                                    context_text = similar_ctx
+                                    break
+                            # O si es directamente una cadena de contexto, usarla
+                            elif isinstance(item, str):
+                                context_text = item
+                                break
 
             if context_text:
                 formatted += context_text + "\n"
