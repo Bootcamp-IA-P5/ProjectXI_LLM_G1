@@ -9,12 +9,15 @@ def create_twitter_prompt(tema, audiencia, informacion_adicional=""):
     Audiencia objetivo: {audiencia}.
     {f'Contexto de la empresa/marca: {informacion_adicional}' if informacion_adicional else ''}
     
-    Requisitos:
+    Requisitos ESTRICTOS:
     - El primer tweet debe ser un 'hook' (gancho) que invite a seguir leyendo.
     - Máximo 280 caracteres por tweet.
     - Tono: Directo, conciso y con personalidad.
     - Incluye emojis pertinentes y 2-3 hashtags estratégicos al final.
+    - Información clara y valiosa para el público {audiencia}.
     - Si es apropiado, termina con una pregunta para fomentar el engagement.
+    
+    FORMATO: Presenta cada tweet numerado (Tweet 1:, Tweet 2:, Tweet 3:)
     """
 
 def create_instagram_prompt(tema, audiencia, informacion_adicional=""):
@@ -24,12 +27,16 @@ def create_instagram_prompt(tema, audiencia, informacion_adicional=""):
     Audiencia objetivo: {audiencia}.
     {f'Contexto de la empresa/marca: {informacion_adicional}' if informacion_adicional else ''}
     
-    Requisitos:
-    - Estructura: Gancho inicial, cuerpo con valor/entretenimiento y Call to Action (CTA).
-    - Tono: Visual, inspirador y cercano.
-    - Usa saltos de línea para facilitar la lectura.
+    Requisitos ESTRICTOS:
+    - Estructura: Gancho inicial IMPACTANTE, cuerpo con valor/entretenimiento y Call to Action (CTA) claro.
+    - Tono: Visual, inspirador y cercano a {audiencia}.
+    - Usa saltos de línea para facilitar la lectura en mobile.
     - Incluye un bloque de 5-10 hashtags relevantes al final.
     - Sugiere brevemente qué tipo de imagen o diseño debería acompañar a este texto.
+    - Máximo 2200 caracteres.
+    - Información valiosa y específica sobre {tema}.
+    
+    FORMATO: Caption + línea en blanco + Hashtags
     """
 
 def create_linkedin_prompt(tema, audiencia, informacion_adicional=""):
@@ -39,58 +46,67 @@ def create_linkedin_prompt(tema, audiencia, informacion_adicional=""):
     Audiencia objetivo: {audiencia}.
     {f'Contexto de la empresa/marca: {informacion_adicional}' if informacion_adicional else ''}
     
-    Requisitos:
-    - Tono: Profesional, analítico y autoritario pero accesible.
+    Requisitos ESTRICTOS:
+    - Tono: Profesional, analítico y autoritario pero accesible a {audiencia}.
     - Formato: Estilo "copywriting de LinkedIn" (líneas cortas, mucho espacio en blanco).
     - Contenido: Aporta un ángulo de negocio, una lección aprendida o una tendencia del sector.
+    - Información específica y valiosa sobre {tema}.
     - Finaliza con una pregunta que invite al debate profesional.
     - Máximo 3 hashtags profesionales.
+    - Evita jerga corporativa innecesaria, sé directo y claro.
     """
 
 def create_blog_prompt(tema, audiencia, informacion_adicional=""):
     return f"""
-    Eres un redactor de contenidos SEO senior.
+    Eres un redactor de contenidos SEO senior y especialista en {tema}.
     Escribe un artículo de blog estructurado sobre: '{tema}'.
     Audiencia objetivo: {audiencia}.
     {f'Contexto de la empresa/marca: {informacion_adicional}' if informacion_adicional else ''}
     
-    Requisitos:
+    Requisitos ESTRICTOS:
     - Título optimizado para SEO (H1).
-    - Introducción sugerente que plantee un problema o necesidad.
+    - Introducción sugerente que plantee un problema o necesidad específica.
     - Cuerpo dividido con subtítulos claros (H2, H3).
-    - Conclusión con un resumen de puntos clave.
-    - Tono: Educativo, detallado y bien estructurado.
-    - Longitud aproximada: 500-800 palabras.
+    - Contenido informativo, detallado y bien estructurado sobre {tema}.
+    - Conclusión con un resumen de puntos clave y CTA.
+    - Tono: Educativo, detallado y experto para {audiencia}.
+    - Información práctica, ejemplos reales y datos concretos sobre {tema}.
+    - Longitud aproximada: 600-900 palabras.
+    - Usa listas, bullet points cuando sea apropiado.
     """
     
-# Funcion que combine todo
-def get_full_prompt(tema, plataforma, audiencia, informacion_adicional=""):
+# Funcion que combine todo - VERSIÓN MEJORADA
+def get_full_prompt(tema, plataforma, audiencia, informacion_adicional="", idioma="Castellano"):
+    """
+    Construye el 'Super Prompt' combinando todas las capas de requisitos.
+    
+    Args:
+        tema: Tema sobre el cual generar contenido
+        plataforma: Plataforma destino (twitter, instagram, linkedin, blog)
+        audiencia: Audiencia objetivo
+        informacion_adicional: Contexto de marca o información extra
+        idioma: Idioma del contenido (default: Castellano)
+    """
+    # Capa 1: Restricción de Idioma (Prioridad máxima)
+    instruccion_idioma = f"⚠️ IMPORTANTE: Toda tu respuesta debe estar escrita ÚNICAMENTE en {idioma}."
+
+    # Capa 2: Personalización de Marca 
+    contexto_marca = f"🏢 Contexto de marca/empresa: {informacion_adicional}" if informacion_adicional else ""
+
+    # Capa 3: Seleccionar prompt específico según plataforma
     plataformas = {
         "twitter": create_twitter_prompt,
         "blog": create_blog_prompt,
         "instagram": create_instagram_prompt,
         "linkedin": create_linkedin_prompt
     }
-    func = plataformas[plataforma]
     
-    base = SYSTEM_PROMPT
-    specific = func(tema, audiencia, informacion_adicional)
-    return base + "\n" + specific
-
-def get_full_prompt(tema, audiencia, plataforma, informacion_adicional, idioma):
-    """
-    Construye el 'Super Prompt' combinando todas las capas de requisitos.
-    """
-    # Capa 1: Restricción de Idioma (Prioridad máxima)
-    instruccion_idioma = f"Toda tu respuesta debe estar escrita en {idioma}."
-
-    # Capa 2: Personalización de Marca 
-    # Si hay info de la empresa, la incluimos para que el contenido sea único
-    contexto_marca = f"Ten en cuenta esta información de la marca: {informacion_adicional}" if informacion_adicional else ""
-
-    # Capa 3: Instrucción de Tarea 
-    # Aquí es donde el modelo aplica su conocimiento de la plataforma
-    tarea = f"Escribe un contenido para {plataforma} sobre el tema '{tema}' dirigido a una audiencia de {audiencia}."
+    if plataforma.lower() not in plataformas:
+        raise ValueError(f"Plataforma '{plataforma}' no soportada. Usa: {list(plataformas.keys())}")
+    
+    func_prompt = plataformas[plataforma.lower()]
+    prompt_especifico = func_prompt(tema, audiencia, informacion_adicional)
 
     # Unimos todo en un solo bloque de texto coherente
-    return f"{instruccion_idioma}\n{contexto_marca}\n\n{tarea}"
+    base = SYSTEM_PROMPT
+    return f"{base}\n\n{instruccion_idioma}\n\n{contexto_marca}\n\n{prompt_especifico}" if contexto_marca else f"{base}\n\n{instruccion_idioma}\n\n{prompt_especifico}"

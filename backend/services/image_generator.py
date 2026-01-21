@@ -34,15 +34,22 @@ def generate_image(prompt: str, width: int = 1024, height: int = 1024) -> str:
         width & height:
     
     Returns:
-        Image URL from HF
+        Image URL from HF or placeholder
     """
+    
+    hf_token = os.getenv("HUGGINGFACE_API_TOKEN")
+    
+    # Si no hay token, retornar un placeholder
+    if not hf_token:
+        logger.warning("HUGGINGFACE_API_TOKEN no configurado. Retornando placeholder de imagen.")
+        return f"https://via.placeholder.com/{width}x{height}?text={prompt[:30].replace(' ', '+')}"
     
     #Limpiar imagenes antiguas antes de generar
     cleanup_old_images()
     
     try:
         # Instanciar cliente de HF
-        client = InferenceClient(api_key=os.getenv("HUGGINGFACE_API_TOKEN"))        
+        client = InferenceClient(api_key=hf_token)        
         
         # Generar imagen
         image = client.text_to_image(
