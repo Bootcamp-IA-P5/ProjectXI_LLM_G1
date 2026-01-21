@@ -164,7 +164,15 @@ Devuelve SOLO JSON:
 
             relationships = data.get("relationships", [])
 
-            # Convertir a tuplas
+            # Validar formato de relaciones y convertir a tuplas
+            invalid_relationships = [rel for rel in relationships if len(rel) != 3]
+            if invalid_relationships:
+                logger.warning(
+                    "⚠️ %d relaciones ignoradas por formato inválido (se esperaban 3 elementos). "
+                    "Ejemplos de relaciones inválidas: %s",
+                    len(invalid_relationships),
+                    invalid_relationships[:3],
+                )
             rel_tuples = [tuple(rel) for rel in relationships if len(rel) == 3]
 
             logger.info(f"✅ {len(rel_tuples)} relaciones extraídas")
