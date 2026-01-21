@@ -69,18 +69,22 @@ class GraphQueryEngine:
             
         # Obtener todas las relaciones en el camino
         edges_in_path = []
-        for i in range(len(path) - 1):
-            source_node = path[i]
-            target_node = path[i+1]
-            
-            # buscar la arista entre estos nodos usando la interfaz de GraphStore
-            if self.graph_store.has_edge(source_node, target_node):
-                relation = self.graph_store.get_edge_relation(source_node, target_node)
-                edges_in_path.append({
-                    "from": source_node,
-                    "relation": relation,
-                    "to": target_node
-                })
+        graph = getattr(self.graph_store, "graph", None)
+        if graph is None:
+            logger.error("❌ GraphStore instance does not expose underlying 'graph' attribute.")
+        else:
+            for i in range(len(path) - 1):
+                source_node = path[i]
+                target_node = path[i+1]
+                
+                # Buscar la arista entre estos nodos usando el grafo subyacente
+                if graph.has_edge(source_node, target_node):
+                    relation = graph[source_node][target_node].get("relation")
+                    edges_in_path.append({
+                        "from": source_node,
+                        "relation": relation,
+                        "to": target_node
+                    })
                 
         # Formatear contexto
         formatted_context = self._format_path_context(path, edges_in_path)
