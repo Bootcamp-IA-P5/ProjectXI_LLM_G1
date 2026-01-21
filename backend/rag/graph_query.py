@@ -62,7 +62,7 @@ class GraphQueryEngine:
             logger.warning(f"⚠️ No hay conexión entre {source} y {target}")
             return {
                 "path": [],
-                "context": f"No se encontró conexion directa entre '{source}' y '{target}'",
+                "context": f"No se encontró conexión directa entre '{source}' y '{target}'",
                 "edges": []
             }
             
@@ -72,9 +72,9 @@ class GraphQueryEngine:
             source_node = path[i]
             target_node = path[i+1]
             
-            # buscar la arista entre estos nodos
-            if self.graph_store.graph.has_edge(source_node, target_node):
-                relation = self.graph_store.graph[source_node][target_node]['relation']
+            # buscar la arista entre estos nodos usando la interfaz de GraphStore
+            if self.graph_store.has_edge(source_node, target_node):
+                relation = self.graph_store.get_edge_relation(source_node, target_node)
                 edges_in_path.append({
                     "from": source_node,
                     "relation": relation,
@@ -135,7 +135,7 @@ class GraphQueryEngine:
             "extracted_entities": ["Machine Learning", "Climate Change"],
             "entity_contexts": {...},
             "relationship_context": {...},
-            "combined_context": "Texo formateado para LLM con toda la información"
+            "combined_context": "Texto formateado para LLM con toda la información"
         }
         """
         
@@ -152,8 +152,9 @@ class GraphQueryEngine:
         # Paso 2: Buscar contexto para cada entidad
         entity_contexts = {}
         for entity in extracted_entities:
-            # buscar si existe en el grafo
-            if entity in self.graph_store.graph:
+            # buscar si existe en el grafo usando la API pública del GraphStore
+            context_data = self.graph_store.get_context(entity)
+            if "error" not in context_data:
                 entity_contexts[entity] = self.query_by_entity(entity)
             else:
                 # Si no existe, buscar conceptos similares
@@ -168,7 +169,7 @@ class GraphQueryEngine:
         # Paso 3: Si hay 2+ entidades, buscar relacion entre ellas
         relationship_context = {}
         if len(extracted_entities) >= 2:
-            for i in range(len(extracted_entities) -1):
+            for i in range(len(extracted_entities) - 1):
                 source = extracted_entities[i]
                 target = extracted_entities[i+1]
                 relationship_context[f"{source}_to_{target}"] = self.query_by_relationship(source, target)

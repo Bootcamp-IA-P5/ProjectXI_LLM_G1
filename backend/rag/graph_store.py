@@ -1,9 +1,9 @@
-#Como funciona un grafo
+# Como funciona un grafo
 """
 import networkx as nx
 
 # Crear grafo
-G = nx.DiGraph() # Directed Graph (artistas con direccion)
+G = nx.DiGraph() # Directed Graph (aristas con direccion)
 
 # Agregar nodos
 G.add_node("Machine Learning")
@@ -13,20 +13,20 @@ G.add_node("Neural Networks")
 G.add_edge("Machine Learning", "Neural Networks", relation= "usa")
 
 # Buscar vecinos
-vecinos = list(G.neighbors("Mchine Learning"))
+vecinos = list(G.neighbors("Machine Learning"))
 # OUTPUT: ["Neural Networks"]
 """
 
 import networkx as nx
 import logging
-from typing import List, Dict, Tuple, Set
+from typing import List, Dict, Tuple
 import json
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 class GraphStore:
-    """ Almacena y gestiona grafo de conceptos cientificos"""
+    """ Almacena y gestiona grafo de conceptos científicos"""
     
     def __init__(self, graph_file: str = "backend/rag/data/knowledge_graph.json"):
         """ 
@@ -44,7 +44,7 @@ class GraphStore:
         
         Args:
             entity: Nombre del concepto (ej: "Machine Learning")
-            metadata: Informacion adicional (ej: {"tipo": "tecnica", "año": 2012})
+            metadata: Información adicional (ej: {"tipo": "tecnica", "año": 2012})
             
         """
         
@@ -58,11 +58,11 @@ class GraphStore:
                 
     def add_relationship(self, source: str, relation: str, target: str):
         """
-        Agregar relacion (arista) entre dos nodos
+        Agregar relación (arista) entre dos nodos
         
         Args:  
             source: Concepto origen
-            relation: Tipo de relacion
+            relation: Tipo de relación
             target: Concepto destino
         
         Output: Crea arista dirigida
@@ -85,7 +85,7 @@ class GraphStore:
             entities: ...
             relationships: [
                 ("Machine Learning", "usa", "Neural Networks"),
-                ("Neural Networks", "requeire", "Data")
+                ("Neural Networks", "requiere", "Data")
             ]
         """
         
@@ -281,7 +281,7 @@ class GraphStore:
             logger.error(f"❌ Error cargando grafo: {e}")
 
     def get_stats(self) -> Dict:
-        """ Obtener estadisticas del grafo"""
+        """ Obtener estadísticas del grafo"""
         
         return {
             "total_nodes": self.graph.number_of_nodes(),

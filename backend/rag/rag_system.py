@@ -17,7 +17,7 @@ class RAGSystem:
     """Update: Sistema RAG completo: Vector RAG + Graph RAG"""
 
     def __init__(self):
-        """Inicializa sistema RAG con ambas tecnicas y todos los componentes"""
+        """Inicializa sistema RAG con ambas técnicas y todos los componentes"""
         self.arxiv_loader = ArxivLoader(max_papers=5)
         self.text_splitter = TextSplitter(chunk_size=500, chunk_overlap=50)
         self.embeddings_manager = EmbeddingsManager()
@@ -43,7 +43,7 @@ class RAGSystem:
         Update: Procesar query con ambas técnicas RAG:
         Query > Vector RAG + Graph RAG (combinado) > Respuesta
         
-        Output: Contexto cientifico inyectable en LLM
+        Output: Contexto científico inyectable en LLM
         """
         
         try:
@@ -85,7 +85,31 @@ class RAGSystem:
             
             try:
                 # Paso 7: Aprender del conjunto de papers (construir grafo)
-                self.learn_from_papers(papers)
+                # Evitar reprocesar los mismos papers en cada consulta
+                if not hasattr(self, "_processed_paper_ids"):
+                    self._processed_paper_ids = set()
+                
+                new_papers = []
+                new_paper_ids = set()
+                for paper in papers:
+                    paper_id = None
+                    # Intentar obtener un identificador estable del paper
+                    if isinstance(paper, dict):
+                        paper_id = paper.get("id")
+                    else:
+                        paper_id = getattr(paper, "id", None)
+                    
+                    # Si no hay ID, lo tratamos como nuevo para no cambiar el comportamiento
+                    if paper_id is None or paper_id not in self._processed_paper_ids:
+                        new_papers.append(paper)
+                        if paper_id is not None:
+                            new_paper_ids.add(paper_id)
+                
+                if new_papers:
+                    self.learn_from_papers(new_papers)
+                    self._processed_paper_ids.update(new_paper_ids)
+                else:
+                    logger.info("ℹ️ Graph RAG: no hay nuevos papers para aprender; se reutiliza el grafo existente")
                 
                 # Paso 8: Consulta enriquecida al grafo
                 graph_results = self.graph_query_engine.enriched_query(query)
