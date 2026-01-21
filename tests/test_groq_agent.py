@@ -3,7 +3,7 @@
 import pytest
 import sys
 import os
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 # Add backend to path so we can import from backend modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
@@ -35,7 +35,7 @@ class TestLLMFactoryUnit:
             LLMFactory.get_client(provider="groq")
     
     @patch('langchain_groq.ChatGroq')
-    def test_llm_factory_creates_groq_client_with_correct_params(self, mock_chatgroq, monkeypatch):
+    def test_llm_factory_creates_groq_client_with_correct_params(self, mock_chatgroq):
         """Test that LLM Factory creates Groq client with correct parameters"""
         # Setup
         mock_client = Mock()
@@ -61,7 +61,7 @@ class TestLLMFactoryUnit:
         )
     
     @patch('langchain_groq.ChatGroq')
-    def test_llm_factory_uses_default_groq_params(self, mock_chatgroq, monkeypatch):
+    def test_llm_factory_uses_default_groq_params(self, mock_chatgroq):
         """Test that LLM Factory uses default parameters when not specified"""
         # Setup
         mock_client = Mock()
