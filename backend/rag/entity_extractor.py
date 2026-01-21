@@ -93,13 +93,25 @@ class EntityExtractor:
         ]
         """
         
-        entities_str = ", ".join(entities)
+        # Sanitizar entidades y texto para evitar inyecciones en el prompt
+        safe_entities: List[str] = []
+        for ent in entities:
+            if not isinstance(ent, str):
+                continue
+            clean_ent = ent.strip()[:100]
+            clean_ent = clean_ent.replace("{", "{{").replace("}", "}}")
+            safe_entities.append(clean_ent)
+
+        entities_str = ", ".join(safe_entities)
+
+        safe_text = (text or "")[:1000]
+        safe_text = safe_text.replace("{", "{{").replace("}", "}}")
         
         prompt = f""" Extrae relaciones entre estas entidades en el texto:
 Entidades: {entities_str}
 
 Texto: 
-{text[:1000]}
+{safe_text}
 
 Devuelve relaciones en formato JSON.
 Cada relacion es: ["Entidad1", "tipo_relacion", "Entidad2"]
