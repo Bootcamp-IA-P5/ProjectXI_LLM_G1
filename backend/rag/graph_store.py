@@ -144,13 +144,12 @@ class GraphStore:
     
     def _collect_outgoing_neighbors(self, entity: str, max_depth: int, current_depth: int, visited: set, results: List):
         """Helper para recolectar vecinos salientes recursivamente"""
-        if current_depth > max_depth or entity in visited:
+        if current_depth > max_depth:
             return
-        
-        visited.add(entity)
         
         for neighbor in self.graph.successors(entity):
             if neighbor not in visited:
+                visited.add(neighbor)
                 relation = self.graph[entity][neighbor]['relation']
                 results.append({
                     "target": neighbor,
@@ -164,13 +163,12 @@ class GraphStore:
     
     def _collect_incoming_neighbors(self, entity: str, max_depth: int, current_depth: int, visited: set, results: List):
         """Helper para recolectar vecinos entrantes recursivamente"""
-        if current_depth > max_depth or entity in visited:
+        if current_depth > max_depth:
             return
-        
-        visited.add(entity)
         
         for neighbor in self.graph.predecessors(entity):
             if neighbor not in visited:
+                visited.add(neighbor)
                 relation = self.graph[neighbor][entity]['relation']
                 results.append({
                     "source": neighbor,
