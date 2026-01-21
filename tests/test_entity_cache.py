@@ -1,11 +1,8 @@
 """Tests for EntityExtractionCache"""
 
-import pytest
 import sys
 import os
 import tempfile
-import json
-from pathlib import Path
 
 # Add backend to path so we can import from backend modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
