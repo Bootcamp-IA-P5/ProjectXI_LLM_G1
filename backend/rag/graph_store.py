@@ -78,7 +78,7 @@ class GraphStore:
         self.graph.add_edge(source, target, relation=relation)
         logger.info(f"✅ Relación: {source} --[{relation}]--> {target}")
 
-    def add_graph_data(self, entities: List[str], relationships: List[Tuple[str, str]]):
+    def add_graph_data(self, entities: List[str], relationships: List[Tuple[str, str, str]]):
         """
         Agregar multiples entradas y relaciones
         
@@ -96,7 +96,7 @@ class GraphStore:
             
         # Agregar todas las relaciones
         for source, relation, target in relationships:
-            #Verificar que ambas entidades existen en la lista original
+            # Verificar que ambas entidades existen en la lista original
             if source in entities and target in entities:
                 self.add_relationship(source, relation, target)
             else:
@@ -112,11 +112,11 @@ class GraphStore:
         Input: entity="Machine Learning", depth=1
         Output: {
             "outgoing": [
-                {"target": "Neural Networks", "relation": "usa"},
-                {"target": "Data", "relation": "procesa"}
+                {"target": "Neural Networks", "relation": "usa", "depth": 1},
+                {"target": "Data", "relation": "procesa", "depth": 1}
             ],
             "incoming": [
-                {"source": "AI", "relation": "es_tipo_de"}
+                {"source": "AI", "relation": "es_tipo_de", "depth": 1}
             ]
         }
         """
@@ -126,28 +126,61 @@ class GraphStore:
             return {"outgoing": [], "incoming": []}
         
         neighbors_info = {
-            "outgoing": [], #Relaciones que salen de entity
-            "incoming": [], #Relaciones que llegan a entity
+            "outgoing": [], # Relaciones que salen de entity
+            "incoming": [], # Relaciones que llegan a entity
         }
         
-        # Vecinos SALIENTES (entity -> X)
-        for neighbor in self.graph.successors(entity): # successors = vecinos salientes
-            relation = self.graph[entity][neighbor]['relation']
-            neighbors_info["outgoing"].append({
-                "target": neighbor,
-                "relation": relation
-            })
+        visited_outgoing = set()
+        visited_incoming = set()
+        
+        # Vecinos SALIENTES (entity -> X) con profundidad
+        self._collect_outgoing_neighbors(entity, depth, 1, visited_outgoing, neighbors_info["outgoing"])
+        
+        # Vecinos ENTRANTES (X -> entity) con profundidad
+        self._collect_incoming_neighbors(entity, depth, 1, visited_incoming, neighbors_info["incoming"])
             
-        # Vecinos ENTRANTES (X -> entity)
-        for neighbor in self.graph.predecessors(entity):
-            relation = self.graph[neighbor][entity]['relation']
-            neighbors_info["incoming"].append({
-                "source": neighbor,
-                "relation": relation
-            })
-            
-        logger.info(f"✅ {len(neighbors_info['outgoing'])} relaciones salientes, {len(neighbors_info['incoming'])} entrantes")
+        logger.info(f"✅ {len(neighbors_info['outgoing'])} relaciones salientes, {len(neighbors_info['incoming'])} entrantes (profundidad={depth})")
         return neighbors_info
+    
+    def _collect_outgoing_neighbors(self, entity: str, max_depth: int, current_depth: int, visited: set, results: List):
+        """Helper para recolectar vecinos salientes recursivamente"""
+        if current_depth > max_depth or entity in visited:
+            return
+        
+        visited.add(entity)
+        
+        for neighbor in self.graph.successors(entity):
+            if neighbor not in visited:
+                relation = self.graph[entity][neighbor]['relation']
+                results.append({
+                    "target": neighbor,
+                    "relation": relation,
+                    "depth": current_depth
+                })
+                
+                # Recursión para siguiente nivel
+                if current_depth < max_depth:
+                    self._collect_outgoing_neighbors(neighbor, max_depth, current_depth + 1, visited, results)
+    
+    def _collect_incoming_neighbors(self, entity: str, max_depth: int, current_depth: int, visited: set, results: List):
+        """Helper para recolectar vecinos entrantes recursivamente"""
+        if current_depth > max_depth or entity in visited:
+            return
+        
+        visited.add(entity)
+        
+        for neighbor in self.graph.predecessors(entity):
+            if neighbor not in visited:
+                relation = self.graph[neighbor][entity]['relation']
+                results.append({
+                    "source": neighbor,
+                    "relation": relation,
+                    "depth": current_depth
+                })
+                
+                # Recursión para siguiente nivel
+                if current_depth < max_depth:
+                    self._collect_incoming_neighbors(neighbor, max_depth, current_depth + 1, visited, results)
     
     def get_path(self, source: str, target: str) -> List[str]:
         """
