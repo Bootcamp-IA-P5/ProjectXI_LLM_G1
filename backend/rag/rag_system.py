@@ -1,24 +1,36 @@
-# Orquestador RAG
+# Orquestador RAG (Ahora actualizado con GRAPH RAG)
 
+from typing import List, Dict
 import logging
 from rag.arxiv_loader import ArxivLoader
 from rag.text_splitter import TextSplitter
 from rag.embeddings_manager import EmbeddingsManager
 from rag.retriever import Retriever
+from rag.entity_extractor import EntityExtractor
+from rag.graph_store import GraphStore
+from rag.graph_query import GraphQueryEngine
 
 logger = logging.getLogger(__name__)
 
 class RAGSystem:
     """Orquestador: conecta Loader → Splitter → Embeddings → Retriever"""
+    """Update: Sistema RAG completo: Vector RAG + Graph RAG"""
 
     def __init__(self):
-        """Inicializa todos los componentes"""
+        """Inicializa sistema RAG con ambas tecnicas y todos los componentes"""
         self.arxiv_loader = ArxivLoader(max_papers=5)
         self.text_splitter = TextSplitter(chunk_size=500, chunk_overlap=50)
         self.embeddings_manager = EmbeddingsManager()
         self.retriever = Retriever()
         
-    def process_query(self, query: str) -> str:
+        # Componentes Graph RAG
+        self.entity_extractor = EntityExtractor()
+        self.graph_store = GraphStore()
+        self.graph_query_engine = GraphQueryEngine(self.graph_store)
+        
+        logger.info("✅ RAG System inicializado (Vector + Graph)")
+        
+    def process_query(self, query: str, use_graph_rag: bool = True) -> str:
         """
         Flujo completo:
         1. Buscar papers en ArXiv
@@ -27,6 +39,11 @@ class RAGSystem:
         4. Guardar en Chroma
         5. Buscar chunks similares
         6. Devolver contexto científico
+        
+        Update: Procesar query con ambas técnicas RAG:
+        Query > Vector RAG + Graph RAG (combinado) > Respuesta
+        
+        Output: Contexto cientifico inyectable en LLM
         """
         
         try:
@@ -52,18 +69,45 @@ class RAGSystem:
             similar_chunks = self.retriever.search(query, query_embedding, top_k=3)
             
             # Paso 6: Formatear contexto para el LLM
+            vector_context = ""
             if similar_chunks:
-                context = self._format_context(similar_chunks)
-                logger.info(f"✅ Contexto científico generado ({len(similar_chunks)} chunks)")
-                return context
+                vector_context = self._format_context(similar_chunks)
+                logger.info(f"✅ Vector RAG: {len(similar_chunks)} chunks similares")
             else:
                 logger.warning(f"⚠️ No chunks similares encontrados")
-                return ""
+                
+            # ============================================
+            # PARTE 2: GRAPH RAG (NUEVO) ✅
+            # ============================================
             
+            if not use_graph_rag:
+                return vector_context # Devolver solo Vector RAG  
+            
+            try:
+                # Paso 7: Aprender del conjunto de papers (construir grafo)
+                self.learn_from_papers(papers)
+                
+                # Paso 8: Consulta enriquecida al grafo
+                graph_results = self.graph_query_engine.enriched_query(query)
+                graph_context = graph_results.get("combined_context", "")
+                logger.info(f"✅ Graph RAG: {len(graph_results.get('extracted_entities', []))} entidades extraídas")
+
+            except Exception as e:
+                logger.warning(f"⚠️ Graph RAG falló, usando solo Vector RAG: {e}")
+                graph_context = ""
+                
+            # ============================================
+            # PARTE 3: Combinar ambos contextos
+            # ============================================
+            
+            combined_context = self._combine_contexts(vector_context, graph_context, query)
+            logger.info("✅ RAG System procesó query (Vector + Graph)")
+            return combined_context
+        
         except Exception as e:
             logger.error(f"❌ Error en RAG: {e}")
-            return "" # Fallback: sin RAG        
-        
+            return ""
+    
     def _format_context(self, chunks: list) -> str:
         """
         Formatea los chunks para que el LLM pueda usarlos
@@ -88,6 +132,75 @@ class RAGSystem:
         
         return context
         
+
+    # ============================================================
+    # NUEVOS MÉTODOS
+    # ============================================================
+
+    def learn_from_papers(self, papers: List[Dict]):
+        """ 
+        Construir grafo de conceptos a partir de papers
         
+        Para cada paper:
+        1. Extraer entidades (conceptos clave)
+        2. Extraer relaciones entre entidades
+        3. Agregar al grafo
+        4. Guardar grafo
+        """
         
+        if not papers: 
+            logger.warning("⚠️ Lista de papers vacía")
+            return
         
+        for idx, paper in enumerate(papers, 1):
+            try:
+                # Combinar título + abstract + contenido
+                text = f"{paper.get('title', '')} {paper.get('abstract', '')} {paper.get('content', '')}"
+                
+                logger.info(f"📚 Procesando paper {idx}/{len(papers)}: {paper.get('title', 'Unknown')[:50]}...")
+
+                # Extraer entidades y relaciones
+                graph_data = self.entity_extractor.extract_graph_data(text)
+                
+                if graph_data["entities"]:
+                    # Agregar al grafo
+                    self.graph_store.add_graph_data(
+                        entities=graph_data["entities"],
+                        relationships=graph_data["relationships"]
+                    )
+
+                    logger.info(f"✅ {len(graph_data['entities'])} entidades extraídas de paper {idx}")
+            
+            except Exception as e:
+                logger.error(f"❌ Error procesando paper {idx}: {e}")
+                continue
+        
+        # Guardar grafo después de procesar todos los papers
+        self.graph_store.save_graph()
+        stats = self.graph_store.get_stats()
+        logger.info(f"✅ Grafo guardado. Stats: {stats}")
+
+    def _combine_contexts(self, vector_context: str, graph_context: str, query: str) -> str:
+        """
+        Combinar contextos de Vector RAG + Graph RAG
+        Orden: Graph RAG (relaciones) -> Vector RAG (fuentes)
+        """
+        
+        combined = "CONTEXTO CIENTÍFICO COMPLETO (Vector + Graph RAG):\n"
+        combined += "=" * 70 + "\n"
+        combined += f"QUERY: {query}\n"
+        combined += "=" * 70 + "\n\n"
+        
+        # Parte 1: Relaciones conceptuales (Graph RAG)
+        if graph_context:
+            combined += "PARTE 1: RELACIONES CONCEPTUALES (GRAPH RAG)\n"
+            combined += "-" * 70 + "\n"
+            combined += graph_context + "\n\n"
+        
+        # Parte 2: Fuentes científicas (Vector RAG)
+        if vector_context:
+            combined += "PARTE 2: FUENTES CIENTÍFICAS (VECTOR RAG)\n"
+            combined += "-" * 70 + "\n"
+            combined += vector_context + "\n"
+        
+        return combined
