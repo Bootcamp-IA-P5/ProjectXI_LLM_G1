@@ -22,18 +22,26 @@ import logging
 from typing import List, Dict, Tuple
 import json
 from pathlib import Path
+import os
+
+GRAPH_FILE_DEFAULT = Path(
+    os.getenv(
+        "KNOWLEDGE_GRAPH_PATH",
+        str(Path(__file__).resolve().parent / "data" / "knowledge_graph.json"),
+    )
+)
 
 logger = logging.getLogger(__name__)
 
 class GraphStore:
     """ Almacena y gestiona grafo de conceptos científicos"""
     
-    def __init__(self, graph_file: str = "backend/rag/data/knowledge_graph.json"):
+    def __init__(self, graph_file: str = str(GRAPH_FILE_DEFAULT)):
         """ 
         Inicializar almacen de grafo
         """
         
-        self.graph_file = graph_file
+        self.graph_file = str(graph_file)
         self.graph = nx.DiGraph()   # Directed Graph, las relaciones tienen direccion
         self.load_graph()           # Cargar grafo anterior si existe
         
