@@ -30,6 +30,10 @@ class EntityExtractionCache:
         """Initialize cache"""
         self.cache_file = str(cache_file)
         self.cache: Dict[str, Dict] = {}
+        
+        # Create directory if it doesn't exist (do this once at initialization)
+        Path(self.cache_file).parent.mkdir(parents=True, exist_ok=True)
+        
         self.load_cache()
         logger.info(f"✅ EntityExtractionCache inicializado con {len(self.cache)} entradas")
 
@@ -81,9 +85,6 @@ class EntityExtractionCache:
     def save_cache(self):
         """Save cache to disk"""
         try:
-            # Create directory if it doesn't exist
-            Path(self.cache_file).parent.mkdir(parents=True, exist_ok=True)
-            
             with open(self.cache_file, 'w', encoding='utf-8') as f:
                 json.dump(self.cache, f, indent=2, ensure_ascii=False)
             
