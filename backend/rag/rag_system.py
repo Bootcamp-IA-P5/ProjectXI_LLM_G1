@@ -13,8 +13,10 @@ from rag.graph_query import GraphQueryEngine
 logger = logging.getLogger(__name__)
 
 class RAGSystem:
-    """Orquestador: conecta Loader → Splitter → Embeddings → Retriever"""
-    """Update: Sistema RAG completo: Vector RAG + Graph RAG"""
+    """Orquestador: conecta Loader → Splitter → Embeddings → Retriever
+    
+    Update: Sistema RAG completo: Vector RAG + Graph RAG
+    """
 
     def __init__(self):
         """Inicializa sistema RAG con ambas técnicas y todos los componentes"""
