@@ -55,7 +55,7 @@ class GraphStore:
         else:
             # Si ya existe, actualizar metadata
             if metadata:
-                self.graph.nodes[entity]['metadata'].update(metadata)
+                self.graph.nodes[entity].setdefault('metadata', {}).update(metadata)
                 
     def add_relationship(self, source: str, relation: str, target: str):
         """
