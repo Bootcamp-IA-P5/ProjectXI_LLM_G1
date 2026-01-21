@@ -75,8 +75,9 @@ class EntityExtractor:
             return entities[:max_entities]
         
         except Exception as e:
-            logger.error(f"❌ Error extrayendo entidades: {e}")
-            return []
+            # Log unexpected errors with traceback and propagate them
+            logger.error(f"❌ Error extrayendo entidades: {e}", exc_info=True)
+            raise
         
     def extract_relationships(self, text: str, entities: List[str]) -> List[Tuple[str, str, str]]:
         """ 
