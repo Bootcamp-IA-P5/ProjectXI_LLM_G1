@@ -97,9 +97,13 @@ class RAGSystem:
                     paper_id = None
                     # Intentar obtener un identificador estable del paper
                     if isinstance(paper, dict):
-                        paper_id = paper.get("id")
+                        # ArxivLoader usa "arxiv_id"; mantenemos compatibilidad con "id" si existiera
+                        paper_id = paper.get("arxiv_id") or paper.get("id")
                     else:
-                        paper_id = getattr(paper, "id", None)
+                        # Primero intentar con atributo "arxiv_id", luego con "id" para otros tipos de objetos
+                        paper_id = getattr(paper, "arxiv_id", None)
+                        if paper_id is None:
+                            paper_id = getattr(paper, "id", None)
                     
                     # Si no hay ID, lo tratamos como nuevo para no cambiar el comportamiento
                     if paper_id is None or paper_id not in self._processed_paper_ids:
