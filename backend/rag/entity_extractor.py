@@ -93,19 +93,18 @@ class EntityExtractor:
         ]
         """
         
-        # Sanitizar entidades y texto para evitar inyecciones en el prompt
+        # Sanitizar entidades y texto limitando longitud y espacios en blanco
         safe_entities: List[str] = []
         for ent in entities:
             if not isinstance(ent, str):
                 continue
             clean_ent = ent.strip()[:100]
-            clean_ent = clean_ent.replace("{", "{{").replace("}", "}}")
             safe_entities.append(clean_ent)
 
         entities_str = ", ".join(safe_entities)
 
+        # Limitar longitud del texto para evitar prompts excesivamente largos
         safe_text = (text or "")[:1000]
-        safe_text = safe_text.replace("{", "{{").replace("}", "}}")
         
         prompt = f""" Extrae relaciones entre estas entidades en el texto:
 Entidades: {entities_str}
