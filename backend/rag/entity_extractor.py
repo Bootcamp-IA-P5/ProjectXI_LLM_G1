@@ -133,17 +133,41 @@ Devuelve SOLO JSON:
                 temperature=0.3,
                 max_tokens=800
             )
-            
+
             response_text = message.choices[0].message.content
-            data = json.loads(response_text)
+
+            # Intentar parsear JSON directamente
+            try:
+                data = json.loads(response_text)
+            except json.JSONDecodeError as e:
+                logger.warning(
+                    f"⚠️ JSON de relaciones inválido, intentando limpiar respuesta: {e}"
+                )
+                # Intentar extraer el bloque JSON de la respuesta de texto
+                json_start = response_text.find("{")
+                json_end = response_text.rfind("}")
+                if json_start != -1 and json_end != -1 and json_start < json_end:
+                    cleaned_response = response_text[json_start : json_end + 1]
+                    try:
+                        data = json.loads(cleaned_response)
+                    except json.JSONDecodeError as e2:
+                        logger.error(
+                            f"❌ No se pudo decodificar JSON de relaciones ni siquiera tras limpieza: {e2}"
+                        )
+                        return []
+                else:
+                    logger.error(
+                        "❌ No se encontró un bloque JSON válido en la respuesta de relaciones"
+                    )
+                    return []
+
             relationships = data.get("relationships", [])
-            
+
             # Convertir a tuplas
             rel_tuples = [tuple(rel) for rel in relationships if len(rel) == 3]
-            
+
             logger.info(f"✅ {len(rel_tuples)} relaciones extraídas")
             return rel_tuples
-        
         except Exception as e:
             logger.error(f"❌ Error extrayendo relaciones: {e}")
             return []
