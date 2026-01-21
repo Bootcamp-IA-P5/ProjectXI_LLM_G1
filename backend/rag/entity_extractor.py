@@ -32,7 +32,7 @@ class EntityExtractor:
         # Sanitizar ligeramente el texto para reducir riesgo de prompt injection
         sanitized_text = text[:1000].replace("{", "(").replace("}", ")")
 
-        prompt = f"""Extrae EXACTAMENTE {max_entities} entidades/conceptos clave de este texto científico.
+        prompt = f"""Extrae hasta un máximo de {max_entities} entidades/conceptos clave de este texto científico.
     Requisitos:
     - Son sustantivos o frases nominales (conceptos, no verbos)
     - Mínimo 2 palabras cada uno (ej: "Neural Networks", no "Networks")
