@@ -164,13 +164,15 @@ class GraphQueryEngine:
                         "context": self.query_by_entity(similar[0])
                     }    
                     
-        # Paso 3: Si hay 2+ entidades, buscar relacion entre ellas
+        # Paso 3: Si hay 2+ entidades, buscar relacion entre todas las parejas posibles
         relationship_context = {}
         if len(extracted_entities) >= 2:
-            for i in range(len(extracted_entities) - 1):
-                source = extracted_entities[i]
-                target = extracted_entities[i+1]
-                relationship_context[f"{source}_to_{target}"] = self.query_by_relationship(source, target)
+            # Considerar todas las combinaciones de pares (i, j) con i < j
+            for i in range(len(extracted_entities)):
+                for j in range(i + 1, len(extracted_entities)):
+                    source = extracted_entities[i]
+                    target = extracted_entities[j]
+                    relationship_context[f"{source}_to_{target}"] = self.query_by_relationship(source, target)
         
         # Paso 4: Combinar todo en contexto para el LLM
         combined_context = self._format_enriched_context(
