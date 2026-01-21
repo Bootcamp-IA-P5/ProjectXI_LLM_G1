@@ -3,6 +3,7 @@ import logging
 from groq import Groq
 import json
 import os
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +71,6 @@ class EntityExtractor:
         except json.JSONDecodeError:
             logger.warning(f"⚠️ Respuesta no es JSON válido, parsing manual")
             # Fallback: extraer entre comillas
-            import re
             entities = re.findall(r'"([^"]+)"', response_text)
             return entities[:max_entities]
         
