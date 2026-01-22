@@ -1,6 +1,6 @@
 # ProjectXI LLM - Intelligent Content Generation with AI
 
-**Full-stack application for generating personalized content and images for multiple social platforms using advanced LLM providers.**
+**Full-stack application for generating personalized content, images, and video scripts for multiple social platforms using advanced LLM providers.**
 
 ---
 
@@ -12,6 +12,7 @@ ProjectXI is a professional content generation platform that combines:
 - **Frontend**: React with modern, responsive design
 - **AI Models**: Groq (mixtral-8x7b-32768), Google Gemini, Ollama
 - **Image Generation**: Hugging Face Inference API (Stable Diffusion)
+- **Video Script Generation**: Complete guides for YouTube, TikTok, Instagram Reels, YouTube Shorts
 - **Multi-Agent Orchestration**: CrewAI for advanced workflows
 
 ---
@@ -21,7 +22,12 @@ ProjectXI is a professional content generation platform that combines:
 ```
 ✅ Real-time content generation powered by Groq API
 ✅ Dynamic image creation based on content topics
-✅ Multi-platform optimization (Instagram, LinkedIn, Twitter, Blog, TikTok, YouTube)
+✅ 🎬 **NEW: Video Script Generation** - Complete guides for video creation
+   ✅ Full scripts with narrative, choreography, music, transitions, and timing
+   ✅ Choreography guides step-by-step for dance videos
+   ✅ Music recommendations with real songs and copyright-free alternatives
+   ✅ Specific platform optimization (YouTube, TikTok, Instagram Reels, YouTube Shorts)
+✅ Multi-platform optimization for text content (Instagram, LinkedIn, Twitter, Blog)
 ✅ Target audience-specific content tailoring
 ✅ Professional and responsive UI
 ✅ REST API with comprehensive documentation
@@ -544,6 +550,75 @@ Content-Type: application/json
   "status": "success"
 }
 ```
+
+### 🎬 Generación de Scripts de Video (NUEVO)
+
+#### Generar Script Completo de Video
+```
+POST /api/video/script
+Content-Type: application/json
+
+{
+  "tema": "Cómo crear una API REST",
+  "plataforma": "youtube",
+  "audiencia": "desarrolladores principiantes",
+  "estilo": "Tutorial",
+  "idioma": "es",
+  "duracion_minutos": 10
+}
+```
+
+**Respuesta**: Guión completo con:
+- Concepto y gancho inicial
+- Narrativa palabra por palabra
+- Coreografía y movimientos
+- Recomendaciones musicales
+- Transiciones y efectos
+- Timeline segundo a segundo
+- Tips para viralizar
+- Checklist de producción
+
+#### Generar Guía de Coreografía
+```
+POST /api/video/choreography
+Content-Type: application/json
+
+{
+  "tema": "Baile reggaeton",
+  "audiencia": "principiantes",
+  "nivel_dificultad": "Intermedio",
+  "idioma": "es"
+}
+```
+
+#### Generar Recomendaciones Musicales
+```
+POST /api/video/music-guide
+Content-Type: application/json
+
+{
+  "tema": "Tutorial de yoga",
+  "plataforma": "youtube",
+  "genero": "Ambient",
+  "idioma": "es"
+}
+```
+
+#### Obtener Plataformas Soportadas
+```
+GET /api/video/platforms
+```
+
+**Respuesta**: Lista de plataformas con características, duración soportada y formatos.
+
+#### Obtener Estilos Disponibles
+```
+GET /api/video/styles
+```
+
+---
+
+**Ver [VIDEO_SCRIPTS_DOCUMENTATION.md](VIDEO_SCRIPTS_DOCUMENTATION.md) para documentación completa y ejemplos.**
 
 ---
 

@@ -4,6 +4,54 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 
 ---
 
+## [v1.1.0] - 2026-01-21
+
+### ✨ Agregadas (Nuevas Características)
+
+#### Backend
+- **Sistema Generador de Guiones de Video**: Nueva funcionalidad para YouTube, TikTok, Instagram Reels y YouTube Shorts
+  - Generación de guiones completos con estructura profesional
+  - Incluye: concepto, narrativa, coreografía, música, transiciones, equipamiento, timeline y tips de viralización
+  - Soporte para diferentes estilos: Educativo, Entretenimiento, Tutorial, Lifestyle, etc.
+  - Adaptación automática según plataforma y duración del video
+  - Guía detallada de coreografía paso a paso para videos de baile
+  - Recomendaciones musicales específicas con canciones reales y música libre
+  
+- **Nuevos Endpoints API**:
+  - `POST /api/video/script`: Generar guión completo para video
+  - `POST /api/video/choreography`: Generar guía de coreografía paso a paso
+  - `POST /api/video/music-guide`: Generar recomendaciones musicales
+  - `GET /api/video/platforms`: Obtener plataformas soportadas
+  - `GET /api/video/styles`: Obtener estilos de video disponibles
+
+- **Nueva clase `VideoScriptGenerator`**:
+  - Inyección de dependencias del cliente LLM
+  - Validación de plataformas y idiomas
+  - Prompts especializados para cada tipo de contenido
+  - Respuestas estructuradas con metadatos
+
+#### Documentación
+- **VIDEO_SCRIPTS_DOCUMENTATION.md**: Documentación completa del sistema de generación de guiones
+  - Guía de endpoints con ejemplos
+  - Parámetros y configuraciones
+  - Flujos de uso completo (Tutorial YouTube, TikTok de baile, Reel Instagram)
+  - Integración frontend con React
+  - Casos de uso y limitaciones
+
+### 🎯 Mejoras
+
+- Arquitectura modular: Separación clara entre generación de contenido y generación de video scripts
+- Consistencia: Uso del mismo patrón de inyección de dependencias en todos los servicios
+- Flexibilidad: Soporte para múltiples plataformas, idiomas y estilos de video
+- Documentación: Ejemplos de curl y código React para fácil integración
+
+### 📝 Notas
+- Los guiones son **guías completas pero requieren implementación manual**
+- Se pueden encadenar múltiples endpoints para un flujo completo (script + coreografía + música)
+- Compatible con Groq, Gemini y otros clientes LLM que implementen la interfaz
+
+---
+
 ## [v1.0.0] - 2026-01-18
 
 ### ✨ Agregadas (Nuevas Características)
