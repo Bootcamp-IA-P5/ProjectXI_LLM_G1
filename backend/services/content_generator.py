@@ -1,7 +1,7 @@
 """Content generation service using LLM Factory pattern"""
 
 import logging
-from ..llm.prompts import get_full_prompt
+from llm.prompts import get_full_prompt
 from .news_service import NewsService
 
 logger = logging.getLogger(__name__)

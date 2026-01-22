@@ -77,7 +77,7 @@ class GroqClient:
                 logger.error("❌ Modelo no inicializado")
                 return ""
                 
-            logger.info(f"📬 Llamando a Groq API ({self.model_name})...")
+            logger.info(f"📬 Llamando a Groq API ({self.model})...")
             logger.info(f"📝 Prompt length: {len(prompt)} caracteres")
             
             response = self.model.invoke(prompt)
