@@ -6,7 +6,6 @@ import './styles/App.css';
 
 export default function App() {
 
-    const [datosForm, setDatosForm] = useState(null);
     const [contenidoGenerado, setContenidoGenerado] = useState("");
     const [imagenGenerada, setImagenGenerada] = useState("");
     const [loading, setLoading] = useState(false);
@@ -26,7 +25,7 @@ export default function App() {
     async function handleFormSubmit(datos) {
 
         // TODO: Guardar datos en estado
-        setDatosForm(datos);
+       // setDatosForm(datos);
 
         // setLoading(true)
         setLoading(true);

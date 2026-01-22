@@ -1,11 +1,11 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel # Para validar JSON
-from backend.agents.crew import run_crew  # TODO: Uncomment after crewai is installed
-from ..services.image_generator import generate_image
-from ..llm.prompts import get_full_prompt
-from rag.rag_system import RAGSystem  # Comentado temporalmente
+from typing import Optional
 import logging
 import os
+from pathlib import Path
+from services.image_generator import generate_image
+from llm.prompts import get_full_prompt
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["generation"])
@@ -41,6 +41,13 @@ def generate_content(request: GenerateRequest):
     try:    
         logger.info(f"📝 Recibida request: tema={request.tema}, plataforma={request.plataforma}, audiencia={request.audiencia}")
         
+        # ✅ En lugar de importar desde app, usar directamente
+        from llm.groq_client import GroqClient
+        import os
+
+        groq_api_key = os.getenv("GROQ_API_KEY")
+        groq_client = GroqClient(api_key=groq_api_key)
+        
         # Validar plataforma
         if request.plataforma.lower() not in PLATFORM_SIZES:
             raise ValueError(f"Plataforma '{request.plataforma}' no válida. Usa: {list(PLATFORM_SIZES.keys())}")
@@ -56,9 +63,6 @@ def generate_content(request: GenerateRequest):
         
         logger.info(f"📬 Prompt generado: {prompt_contenido[:100]}...")
         logger.info(f"📬 Enviando prompt a Groq...")
-        
-        # Lazy import para evitar circular imports
-        from ..app import groq_client
         
         logger.info(f"🔍 Groq client status: {groq_client}")
         logger.info(f"🔍 Groq client api_key exists: {bool(groq_client.api_key)}")
@@ -139,7 +143,7 @@ Dirigido especialmente a {request.audiencia}.
             # Convertir URL relativa a absoluta si es necesario
             if image_url.startswith('/'):
                 # Usar variable de entorno para URL base, default a localhost:8000
-                base_url = os.getenv("BACKEND_URL", "http://localhost:8000")
+                base_url = os.getenv("BACKEND_URL", "http://localhost:5000")
                 image_url = f"{base_url}{image_url}"
                 logger.info(f"✅ URL convertida a absoluta: {image_url}")
                 

@@ -62,7 +62,7 @@ cp .env.example .env
 
 # Run backend
 python main.py
-# Server running on http://localhost:5001
+# Server running on http://localhost:5000
 ```
 
 ### Frontend Setup
