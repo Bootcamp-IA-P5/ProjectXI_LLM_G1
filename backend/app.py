@@ -20,6 +20,27 @@ app = FastAPI(
     description="API para generar contenido con LLMs",
     version="1.0.0"
 )
+
+# ============================================
+# CORS - permitir conexiones desde frontend
+# ============================================
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",      # ✅ Frontend dev
+        "http://localhost:5000",      # ✅ Local testing
+        "http://localhost:5001",
+        "http://127.0.0.1:3000",      # ✅ Alternative localhost
+        "http://127.0.0.1:5000",      # ✅ Alternative localhost
+        "http://127.0.0.1:5001",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],              # Permite POST, GET, OPTIONS, etc.
+    allow_headers=["*"],              # Permite todos los headers
+)
+logger.info("✅ CORS configurado")
+
+
 # ============================================
 # Instanciar cliente LLM global
 # ============================================
@@ -33,18 +54,6 @@ groq_client = GroqClient(api_key=groq_api_key)
 content_generator = ContentGenerator(groq_client) 
 
 logger.info("✅ Clientes LLM inicializados")
-
-# ============================================
-# CORS - permitir conexiones desde frontend
-# ============================================
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5000", "http://localhost:5001"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-logger.info("✅ CORS configurado")
 
 # ============================================
 # archivos estaticos de imagenes generadas
