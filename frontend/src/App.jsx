@@ -34,7 +34,8 @@ export default function App() {
 
         // TODO: Llamar api.js
         try {
-            const response = await generateContent(datos);
+            console.log("🔍 Endpoint recibido:", endpoint);  // ← AGREGAR ESTA LÍNEA
+            const response = await generateContent(datos, endpoint);
             console.log("🎉 RESPONSE COMPLETO:", response);
             console.log("📝 CONTENIDO:", response.contenido);
             console.log("🖼️ IMAGE_URL RAW:", response.image_url);

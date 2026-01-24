@@ -33,6 +33,8 @@ export default function ContentForm({ onSubmit }) {
 
     function handleSubmit(e) {
         e.preventDefault();
+    
+        console.log("🔍 activeTab actual:", activeTab);  // ← AGREGAR ESTA LÍNEA
 
         const newErrors = validateForm();
         if (Object.keys(newErrors).length > 0) {
@@ -46,7 +48,13 @@ export default function ContentForm({ onSubmit }) {
         const datos = { tema, plataforma, audiencia, idioma, informacion_adicional: infoAdicional };
 
         // ✅ NUEVO: Endpoint diferente según tab
-        const endpoint = activeTab === "scientific" ? "/api/generate-scientific" : "/api/generate";
+        const endpoint = 
+            activeTab === "scientific" ? "/generate-scientific" :
+            activeTab === "crew" ? "/crew/generate" :
+            "/generate";        
+        
+        console.log("📤 Enviando a App.jsx:", { datos: datos.tema, endpoint });  // ← AGREGAR
+
         onSubmit(datos, endpoint);
 
         setTimeout(() => {
@@ -84,16 +92,27 @@ export default function ContentForm({ onSubmit }) {
                     >
                         🔬 Científico
                     </button>
+                    <button
+                        type="button"
+                        className={`tab-button ${activeTab === "crew" ? "tab-active" : ""}`}
+                        onClick={() => setActiveTab("crew")}
+                    >
+                        🤖 CrewAI
+                    </button>
                 </div>
-            </div>
-
-            {/* ✅ NUEVO: Aviso científico */}
-            {activeTab === "scientific" && (
-                <div className="scientific-notice">
-                    🔬 Contenido fundamentado en papers académicos y fuentes científicas
                 </div>
-            )}
 
+                {/* ✅ NUEVO: Avisos según tab */}
+                {activeTab === "scientific" && (
+                    <div className="scientific-notice">
+                        🔬 Contenido fundamentado en papers académicos y fuentes científicas
+                    </div>
+                )}
+                {activeTab === "crew" && (
+                    <div className="scientific-notice" style={{background: '#f0fdf4', borderColor: '#10b981', color: '#059669'}}>
+                        🤖 Generación inteligente con refinamiento automático de imagen
+                    </div>
+                )}
             <div className={`form-group ${errors.tema ? 'error' : ''}`}>
                 <label className="form-label" htmlFor="tema">Tema Principal</label>
                 <input
