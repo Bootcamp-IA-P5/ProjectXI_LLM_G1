@@ -22,7 +22,7 @@ class LLMFactory:
         Get an LLM client instance based on provider.
         
         Args:
-            provider: LLM provider name ('groq', 'gemini', 'ollama')
+            provider: LLM provider name ('groq', 'gemini')
                      If None, uses LLM_PROVIDER from environment
             **kwargs: Additional arguments to pass to client
         
@@ -38,8 +38,6 @@ class LLMFactory:
             return LLMFactory._get_groq_client(**kwargs)
         elif provider == "gemini":
             return LLMFactory._get_gemini_client(**kwargs)
-        elif provider == "ollama":
-            return LLMFactory._get_ollama_client(**kwargs)
         else:
             raise ValueError(f"Unknown LLM provider: {provider}")
     
@@ -82,18 +80,6 @@ class LLMFactory:
         return genai.GenerativeModel(model)
     
     @staticmethod
-    def _get_ollama_client(**kwargs):
-        """Initialize and return an Ollama client"""
-        from llm.ollama_client import OllamaClient
-        
-        base_url = kwargs.get("base_url") or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-        model = kwargs.get("model", "mistral")
-        
-        logger.info(f"Creating Ollama client with model: {model}")
-        
-        return OllamaClient(base_url=base_url, model=model)
-    
-    @staticmethod
     def get_model_name(provider: str = None) -> str:
         """
         Get the default model name for a provider.
@@ -109,7 +95,6 @@ class LLMFactory:
         models = {
             "groq": "mixtral-8x7b-32768",
             "gemini": "gemini-pro",
-            "ollama": "mistral"
         }
         
         return models.get(provider, "unknown")
