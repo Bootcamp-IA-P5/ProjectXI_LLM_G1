@@ -50,6 +50,9 @@ class RAGSystem:
         Output: Contexto científico inyectable en LLM
         """
         
+        # Limpiar grafo anterior para nueva query
+        self.graph_store.clear_graph()
+        
         try:
             logger.info(f"🔍 Iniciando RAG para query: {query}")
             
@@ -114,7 +117,7 @@ class RAGSystem:
                             new_paper_ids.add(paper_id)
                 
                 if new_papers:
-                    self.learn_from_papers(new_papers)
+                    # self.learn_from_papers(new_papers)
                     self._processed_paper_ids.update(new_paper_ids)
                 else:
                     logger.info("ℹ️ Graph RAG: no hay nuevos papers para aprender; se reutiliza el grafo existente")

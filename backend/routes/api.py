@@ -180,3 +180,58 @@ def crew_generate(request: GenerateRequest):
     """Endpoint multiagente: Groq >> Gemini >> Imagen (alias para /api/generate)"""
     return generate_content(request)
     
+
+@router.post("/generate-scientific")
+def generate_scientific(request: GenerateRequest):
+    """
+    RAG Endpoint: Contenido científico fundamentado en papers académicos
+    Reutiliza generate_content + contexto RAG
+    """
+
+    try:
+        logger.info(f"🔬 Recibida request científica: {request.tema}")
+
+        # Importar RAG
+        from rag.rag_system import RAGSystem
+        rag_system = RAGSystem ()
+        logger.info("✅ RAGSystem inicializado")
+
+        # Procesar query con RAG
+        logger.info(f"⏳ Procesando query con RAG: {request.tema}")
+        rag_context = rag_system.process_query(
+            query=request.tema,
+            use_graph_rag=True
+        )
+        logger.info(f"✅ RAG context obtenido ({len(rag_context)} caracteres)")
+
+        # Crear prompt mejorado con contexto RAG
+        rag_instruction = f"""
+
+🔬 CONTEXTO CIENTÍFICO (fundamentado en papers académicos):
+{rag_context}
+
+Usa este contexto académico para fundamentar tu respuesta. 
+Mantén rigor científico pero hazlo accesible para {request.audiencia}.
+"""
+
+        # Reutilizar información_adicional existente
+        if request.informacion_adicional:
+            request.informacion_adicional += "\n\n" + rag_instruction
+        else:
+            request.informacion_adicional = rag_instruction
+        
+        # Llamar a generate_content existente (evita duplicación)
+        logger.info("📤 Llamando a generate_content con contexto RAG")
+        response = generate_content(request)
+        
+        # Agregar metadata RAG
+        response["metadata"]["execution_type"] = "rag"
+        response["metadata"]["rag_context_length"] = len(rag_context)
+        response["metadata"]["has_scientific_context"] = True
+        
+        logger.info("✅ Respuesta científica generada exitosamente")
+        return response
+        
+    except Exception as e:
+        logger.error(f"❌ Error en RAG: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error RAG: {str(e)}")

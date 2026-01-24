@@ -10,6 +10,9 @@ export default function ContentForm({ onSubmit }) {
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // ✅ NUEVO: Estado para tabs
+    const [activeTab, setActiveTab] = useState("normal");
+
     function validateForm() {
         const newErrors = {};
 
@@ -41,7 +44,10 @@ export default function ContentForm({ onSubmit }) {
         setIsSubmitting(true);
 
         const datos = { tema, plataforma, audiencia, idioma, informacion_adicional: infoAdicional };
-        onSubmit(datos);
+
+        // ✅ NUEVO: Endpoint diferente según tab
+        const endpoint = activeTab === "scientific" ? "/api/generate-scientific" : "/api/generate";
+        onSubmit(datos, endpoint);
 
         setTimeout(() => {
             setIsSubmitting(false);
@@ -61,7 +67,32 @@ export default function ContentForm({ onSubmit }) {
         <form onSubmit={handleSubmit} className="form-card">
             <div className="form-header">
                 <h2 className="form-title">📝 Crea tu Contenido</h2>
+
+                {/* ✅ NUEVO: TABS */}
+                <div className="form-tabs">
+                    <button
+                        type="button"
+                        className={`tab-button ${activeTab === "normal" ? "tab-active" : ""}`}
+                        onClick={() => setActiveTab("normal")}
+                    >
+                        📝 Normal
+                    </button>
+                    <button
+                        type="button"
+                        className={`tab-button ${activeTab === "scientific" ? "tab-active" : ""}`}
+                        onClick={() => setActiveTab("scientific")}
+                    >
+                        🔬 Científico
+                    </button>
+                </div>
             </div>
+
+            {/* ✅ NUEVO: Aviso científico */}
+            {activeTab === "scientific" && (
+                <div className="scientific-notice">
+                    🔬 Contenido fundamentado en papers académicos y fuentes científicas
+                </div>
+            )}
 
             <div className={`form-group ${errors.tema ? 'error' : ''}`}>
                 <label className="form-label" htmlFor="tema">Tema Principal</label>
