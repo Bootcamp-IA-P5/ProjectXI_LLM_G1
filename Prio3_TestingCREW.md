@@ -30,7 +30,7 @@ CrewAI completamente integrado en backend y frontend. Sistema multiagente orques
 
 **`backend/agents/gemini_agent.py`** ✅
 ```
-- ChatGoogleGenerativeAI inicializado (gemini-2.0-flash)
+- ChatGoogleGenerativeAI inicializado (gemini-2.5-flash)
 - API_KEY: soporta GOOGLE_API_KEY y GEMINI_API_KEY
 - Role: Image Prompt Optimizer
 - Fallback a None si API no configurada
