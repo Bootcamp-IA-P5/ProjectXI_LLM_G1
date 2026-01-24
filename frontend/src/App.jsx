@@ -22,8 +22,7 @@ export default function App() {
         document.documentElement.setAttribute('data-theme', newMode ? 'dark' : 'light');
     };
 
-    async function handleFormSubmit(datos) {
-
+    async function handleFormSubmit(datos, endpoint = "/api/generate") {
         // TODO: Guardar datos en estado
        // setDatosForm(datos);
 

@@ -1,6 +1,6 @@
 // Esta función TARDA (espera respuesta del backend)
 // Por eso es "async", necesitamos decirle a JS "espera a que termine"
-export async function generateContent(datos) {
+export async function generateContent(datos, endpoint = "/generate") {
 
     // Detectar si estamos en Docker o en local
     const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
@@ -10,7 +10,7 @@ export async function generateContent(datos) {
         Using: apiBaseUrl
     });
 
-    const url = `${apiBaseUrl}/generate`;
+    const url = `${apiBaseUrl}${endpoint}`;
     
     try { // maneja errores
         const response = await fetch(url, { // hace la peticion y response lo que vuelve del servidor
