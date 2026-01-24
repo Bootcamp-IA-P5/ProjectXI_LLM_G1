@@ -16,7 +16,7 @@ class GenerateRequest(BaseModel):
     audiencia: str
     informacion_adicional: str = "" 
     contexto_marca: str = ""
-    idioma: str = "Castellano"
+    idioma: str = "es"
 
 PLATFORM_SIZES = {
     "twitter": {"width": 1200, "height": 630},

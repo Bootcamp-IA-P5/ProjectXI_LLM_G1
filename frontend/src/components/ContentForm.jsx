@@ -5,6 +5,7 @@ export default function ContentForm({ onSubmit }) {
     const [tema, setTema] = useState("");
     const [plataforma, setPlataforma] = useState("");
     const [audiencia, setAudiencia] = useState("");
+    const [idioma, setIdioma] = useState("es");
     const [infoAdicional, setInfoAdicional] = useState("");
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,7 +40,7 @@ export default function ContentForm({ onSubmit }) {
         setErrors({});
         setIsSubmitting(true);
 
-        const datos = { tema, plataforma, audiencia, infoAdicional };
+        const datos = { tema, plataforma, audiencia, idioma, informacion_adicional: infoAdicional };
         onSubmit(datos);
 
         setTimeout(() => {
@@ -51,6 +52,7 @@ export default function ContentForm({ onSubmit }) {
         setTema("");
         setPlataforma("");
         setAudiencia("");
+        setIdioma("es"); // ES por defecto
         setInfoAdicional("");
         setErrors({});
     }
@@ -94,7 +96,7 @@ export default function ContentForm({ onSubmit }) {
                     <option value="twitter">🐦 Twitter / X</option>
                     <option value="blog">📰 Blog</option>
                     <option value="instagram">📸 Instagram</option>
-                    <option value="linkedIn">💼 LinkedIn</option>
+                    <option value="linkedin">💼 LinkedIn</option>
                     <option value="tiktok">🎵 TikTok</option>
                     <option value="youtube">▶️ YouTube</option>
                 </select>
@@ -116,6 +118,21 @@ export default function ContentForm({ onSubmit }) {
                     }}
                 />
                 {errors.audiencia && <span className="form-error">{errors.audiencia}</span>}
+            </div>
+
+            <div className="form-group">
+                <label className="form-label" htmlFor="idioma">🌐 Idioma</label>
+                <select
+                    id="idioma"
+                    value={idioma}
+                    onChange={(e) => setIdioma(e.target.value)}
+                    className="form-control"
+                >
+                    <option value="es">🇪🇸 Español</option>
+                    <option value="en">🇬🇧 English</option>
+                    <option value="fr">🇫🇷 Français</option>
+                    <option value="it">🇮🇹 Italiano</option>
+                </select>
             </div>
 
             <div className="form-group">
