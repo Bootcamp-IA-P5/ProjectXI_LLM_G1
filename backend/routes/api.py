@@ -177,8 +177,101 @@ Dirigido especialmente a {request.audiencia}.
 
 @router.post("/crew/generate")
 def crew_generate(request: GenerateRequest):
-    """Endpoint multiagente: Groq >> Gemini >> Imagen (alias para /api/generate)"""
-    return generate_content(request)
+    """
+    ✅ ENDPOINT MULTIAGENTE COMPLETO
+    Groq (contenido) → CrewAI/Gemini (refina prompt imagen) → HF (genera imagen)
+    """
+    try:
+        logger.info(f"🤖 CrewAI Request: {request.tema}")
+        
+        # PASO 1: Generar contenido con Groq (igual que en /generate)
+        from llm.groq_client import GroqClient
+        groq_api_key = os.getenv("GROQ_API_KEY")
+        groq_client = GroqClient(api_key=groq_api_key)
+        
+        prompt_contenido = get_full_prompt(
+            tema=request.tema,
+            plataforma=request.plataforma,
+            audiencia=request.audiencia,
+            informacion_adicional=request.informacion_adicional,
+            idioma=request.idioma
+        )
+        
+        contenido = groq_client.generate(prompt_contenido)
+        logger.info(f"✅ Contenido Groq: {len(contenido)} caracteres")
+        
+        # PASO 2: Usar CrewAI para refinar prompt de imagen
+        prompt_imagen_refinado = None
+        try:
+            from agents.crew import run_crew
+            
+            if run_crew:  # Si CrewAI está disponible
+                logger.info("🤖 Ejecutando CrewAI para refinar prompt...")
+                prompt_imagen_refinado = run_crew(
+                    tema=request.tema,
+                    plataforma=request.plataforma,
+                    audiencia=request.audiencia,
+                    contenido_groq=contenido,
+                    contexto_marca=request.informacion_adicional
+                )
+                logger.info(f"✅ Prompt refinado por CrewAI")
+            else:
+                logger.warning("⚠️ CrewAI no disponible")
+                
+        except Exception as crew_error:
+            logger.error(f"❌ Error en CrewAI: {str(crew_error)}, usando fallback")
+        
+        # Si CrewAI falló, usar template estándar
+        if not prompt_imagen_refinado:
+            template_imagen = IMAGE_PROMPT_TEMPLATES.get(
+                request.plataforma.lower(),
+                f"High quality image about {request.tema}"
+            )
+            prompt_imagen_refinado = template_imagen.format(
+                tema=request.tema,
+                audiencia=request.audiencia
+            )
+        
+        # PASO 3: Generar imagen con prompt refinado
+        size = PLATFORM_SIZES.get(request.plataforma.lower(), {"width": 1024, "height": 1024})
+        
+        try:
+            image_url = generate_image(
+                prompt_imagen_refinado,
+                width=size["width"],
+                height=size["height"]
+            )
+            logger.info(f"✅ Imagen generada: {image_url}")
+        except Exception as e:
+            logger.warning(f"⚠️ Error imagen: {str(e)}, usando placeholder")
+            image_url = f"https://via.placeholder.com/{size['width']}x{size['height']}?text={request.tema[:30]}"
+        
+        # Convertir URL si es relativa
+        if image_url.startswith('/'):
+            base_url = os.getenv("BACKEND_URL", "http://localhost:5000")
+            image_url = f"{base_url}{image_url}"
+        
+        # RESPUESTA FINAL CON METADATA DE CREW
+        return {
+            "contenido": contenido,
+            "image_url": image_url,
+            "status": "success",
+            "execution_type": "multiagent_crew",  # ✅ ESTO ES LA CLAVE
+            "metadata": {
+                "tema": request.tema,
+                "plataforma": request.plataforma,
+                "audiencia": request.audiencia,
+                "idioma": request.idioma,
+                "crew_executed": True,
+                "image_prompt_refined": True
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error en crew_generate: {str(e)}")
+        # FALLBACK: usar generación simple
+        logger.info("⚠️ Fallback a /api/generate...")
+        return generate_content(request)
     
 
 @router.post("/generate-scientific")

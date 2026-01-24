@@ -3,7 +3,7 @@
 export async function generateContent(datos, endpoint = "/generate") {
 
     // Detectar si estamos en Docker o en local
-    const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
+    const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
     console.log("📤 Environment:", {
         REACT_APP_API_URL: process.env.REACT_APP_API_URL,
@@ -11,6 +11,8 @@ export async function generateContent(datos, endpoint = "/generate") {
     });
 
     const url = `${apiBaseUrl}${endpoint}`;
+    
+    console.log("📍 URL FINAL:", url);
     
     try { // maneja errores
         const response = await fetch(url, { // hace la peticion y response lo que vuelve del servidor
