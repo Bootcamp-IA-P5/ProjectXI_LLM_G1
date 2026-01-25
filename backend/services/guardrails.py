@@ -31,6 +31,7 @@ class ContentGuardrails:
             issues.append("Contenido excede límite de 280 caracteres")
         if len(contenido.strip()) < 10:
             issues.append("Contenido demasiado corto")
+        #validar otras plataformas
 
         # Detectar sesgos
         bias_result = self.bias_detector.analyze_bias(contenido)
