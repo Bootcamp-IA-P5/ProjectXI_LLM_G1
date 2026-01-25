@@ -9,7 +9,7 @@ from llm.prompts import get_full_prompt
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["generation"])
-
+groq_client = None  # Inicializar groq_client como None
 class GenerateRequest(BaseModel):
     tema: str
     plataforma: str
