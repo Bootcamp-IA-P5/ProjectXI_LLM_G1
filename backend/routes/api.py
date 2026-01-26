@@ -4,8 +4,9 @@ from typing import Optional
 import logging
 import os
 from pathlib import Path
-from services.image_generator import generate_image
-from llm.prompts import get_full_prompt
+from ..services.image_generator import generate_image
+from ..services.video_script_generator import VideoScriptGenerator
+from ..llm.prompts import get_full_prompt
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["generation"])
@@ -71,7 +72,7 @@ def generate_content(request: GenerateRequest):
         logger.info(f"📝 Recibida request: tema={request.tema}, plataforma={request.plataforma}, audiencia={request.audiencia}")
         
         # ✅ En lugar de importar desde app, usar directamente
-        from llm.groq_client import GroqClient
+        from ..llm.groq_client import GroqClient
         import os
 
         groq_api_key = os.getenv("GROQ_API_KEY")
@@ -214,7 +215,7 @@ def crew_generate(request: GenerateRequest):
         logger.info(f"🤖 CrewAI Request: {request.tema}")
         
         # PASO 1: Generar contenido con Groq (igual que en /generate)
-        from llm.groq_client import GroqClient
+        from ..llm.groq_client import GroqClient
         groq_api_key = os.getenv("GROQ_API_KEY")
         groq_client = GroqClient(api_key=groq_api_key)
         
@@ -232,7 +233,7 @@ def crew_generate(request: GenerateRequest):
         # PASO 2: Usar CrewAI para refinar prompt de imagen
         prompt_imagen_refinado = None
         try:
-            from agents.crew import run_crew
+            from ..agents.crew import run_crew
             
             if run_crew:  # Si CrewAI está disponible
                 logger.info("🤖 Ejecutando CrewAI para refinar prompt...")
@@ -314,7 +315,7 @@ def generate_scientific(request: GenerateRequest):
         logger.info(f"🔬 Recibida request científica: {request.tema}")
 
         # Importar RAG
-        from rag.rag_system import RAGSystem
+        from ..rag.rag_system import RAGSystem
         rag_system = RAGSystem ()
         logger.info("✅ RAGSystem inicializado")
 
