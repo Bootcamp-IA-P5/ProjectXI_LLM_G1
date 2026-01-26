@@ -19,7 +19,7 @@ class ContentGenerator:
     def __init__(self, llm_client):
         """Recibir cliente Groq (inyeccion de dependencia)"""
         self.llm_client = llm_client
-        self.plataformas_soportadas = ["twitter", "blog", "instagram", "linkedin"]
+        self.plataformas_soportadas = ["twitter", "blog", "instagram", "linkedin", "tiktok", "youtube"]
         # Mapeo de códigos a nombres para que el LLM lo entienda mejor
         self.idiomas_soportados = {
             "es": "Castellano", 
@@ -29,17 +29,17 @@ class ContentGenerator:
         }
         self.news_service = NewsService() # Instanciamos el servicio
 
-    def _invoke_llm_client(self, prompt: str) -> str:
+    def generate_content(self, tema: str, plataforma: str, audiencia: str, 
+                         informacion_adicional: str = "", idioma: str = "es") -> str:
         """
         Generar contenido multilingüe y personalizado
         """
         # 1. VALIDACIÓN DE IDIOMA
-        # Comprobamos si el código de idioma enviado por el frontend existe en nuestro diccionario
         if idioma not in self.idiomas_soportados:
             raise ValueError(f"Idioma '{idioma}' no soportado. Usa: {list(self.idiomas_soportados.keys())}")
 
         if plataforma not in self.plataformas_soportadas:
-            raise ValueError(f"Palataforma '{plataforma}' no soportada. Usa: {self.plataformas_soportadas}")
+            raise ValueError(f"Plataforma '{plataforma}' no soportada. Usa: {self.plataformas_soportadas}")
         
         try:     
             nombre_idioma = self.idiomas_soportados[idioma]
@@ -54,7 +54,6 @@ class ContentGenerator:
             )
             
             # 3. GENERACIÓN CON LLM
-            # El cliente llm recibe el prompt ya traducido y configurado
             contenido = self.llm_client.generate(prompt_final)
             
             return contenido

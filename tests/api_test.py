@@ -14,7 +14,7 @@ sys.modules['huggingface_hub'] = MagicMock()
 
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
-from routes.api import router
+from backend.routes.api import router
 
 # Crear app de test
 app = FastAPI()
@@ -41,7 +41,7 @@ class TestGenerateContentEndpoint:
             "idioma": "es"
         }
         
-        with patch('routes.api.groq_client', mock_groq_client):
+        with patch('backend.llm.groq_client.GroqClient', return_value=mock_groq_client):
             response = client.post("/api/generate", json=payload)
         
         assert response.status_code == 200
@@ -59,7 +59,7 @@ class TestGenerateContentEndpoint:
             "idioma": "es"
         }
         
-        with patch('routes.api.groq_client', mock_groq_client):
+        with patch('backend.llm.groq_client.GroqClient', return_value=mock_groq_client):
             response = client.post("/api/generate", json=payload)
         
         assert response.status_code in [400, 422]
@@ -81,7 +81,7 @@ class TestGenerateContentEndpoint:
                 "idioma": idioma
             }
             
-            with patch('routes.api.groq_client', mock_groq_client):
+            with patch('backend.llm.groq_client.GroqClient', return_value=mock_groq_client):
                 response = client.post("/api/generate", json=payload)
             
             assert response.status_code == 200

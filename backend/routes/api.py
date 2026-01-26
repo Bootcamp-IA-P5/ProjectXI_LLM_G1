@@ -4,8 +4,9 @@ from typing import Optional
 import logging
 import os
 from pathlib import Path
-from services.image_generator import generate_image
-from llm.prompts import get_full_prompt
+from ..services.image_generator import generate_image
+from ..services.video_script_generator import VideoScriptGenerator
+from ..llm.prompts import get_full_prompt
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["generation"])
@@ -18,11 +19,38 @@ class GenerateRequest(BaseModel):
     contexto_marca: str = ""
     idioma: str = "es"
 
+
+class VideoScriptRequest(BaseModel):
+    tema: str
+    plataforma: str  # youtube, tiktok, youtube_shorts, instagram_reels
+    audiencia: str
+    estilo: str = "Educativo"  # Educativo, Entretenimiento, Tutorial, Lifestyle, etc.
+    idioma: str = "es"  # es, en, fr, it
+    duracion_minutos: int = 1
+    informacion_adicional: str = ""
+
+
+class ChoreographyRequest(BaseModel):
+    tema: str
+    audiencia: str
+    nivel_dificultad: str = "Intermedio"  # Principiante, Intermedio, Avanzado
+    idioma: str = "es"
+    informacion_adicional: str = ""
+
+
+class MusicGuideRequest(BaseModel):
+    tema: str
+    plataforma: str
+    genero: str = "Pop"
+    idioma: str = "es"
+
 PLATFORM_SIZES = {
     "twitter": {"width": 1200, "height": 630},
     "instagram": {"width": 1080, "height": 1080},
     "blog": {"width": 1200, "height": 800},
-    "linkedin": {"width": 1200, "height": 630}
+    "linkedin": {"width": 1200, "height": 630},
+    "tiktok": {"width": 1080, "height": 1920},
+    "youtube": {"width": 1280, "height": 720}
 }
 
 # Diccionario para refinar prompts de imagen según plataforma y tema
@@ -30,7 +58,9 @@ IMAGE_PROMPT_TEMPLATES = {
     "instagram": "Beautiful, highly detailed Instagram post about {tema}, professional photography, modern aesthetic, vibrant colors, 4K quality, appealing to {audiencia}",
     "twitter": "Minimalist, eye-catching Twitter/X header image about {tema}, professional design, modern style, 4K quality, suitable for {audiencia}",
     "linkedin": "Professional corporate image about {tema}, clean design, business-oriented, high quality photography, 4K resolution, suitable for professionals in {audiencia}",
-    "blog": "Comprehensive, detailed blog header image about {tema}, professional photography, informative visual, 4K quality, engaging for {audiencia}"
+    "blog": "Comprehensive, detailed blog header image about {tema}, professional photography, informative visual, 4K quality, engaging for {audiencia}",
+    "tiktok": "Vibrant, eye-catching TikTok thumbnail about {tema}, trendy design, vertical format optimized, engaging visual for Gen Z audience interested in {audiencia}",
+    "youtube": "Professional YouTube thumbnail about {tema}, bold typography, high contrast colors, clickable design, 4K quality, suitable for viewers interested in {audiencia}"
 }
 
 
@@ -42,7 +72,7 @@ def generate_content(request: GenerateRequest):
         logger.info(f"📝 Recibida request: tema={request.tema}, plataforma={request.plataforma}, audiencia={request.audiencia}")
         
         # ✅ En lugar de importar desde app, usar directamente
-        from llm.groq_client import GroqClient
+        from ..llm.groq_client import GroqClient
         import os
 
         groq_api_key = os.getenv("GROQ_API_KEY")
@@ -157,6 +187,7 @@ Dirigido especialmente a {request.audiencia}.
             "contenido": contenido, 
             "image_url": image_url,
             "status": "success",
+            "validado": True,
             "metadata": {
                 "tema": request.tema,
                 "plataforma": request.plataforma,
@@ -185,7 +216,7 @@ def crew_generate(request: GenerateRequest):
         logger.info(f"🤖 CrewAI Request: {request.tema}")
         
         # PASO 1: Generar contenido con Groq (igual que en /generate)
-        from llm.groq_client import GroqClient
+        from ..llm.groq_client import GroqClient
         groq_api_key = os.getenv("GROQ_API_KEY")
         groq_client = GroqClient(api_key=groq_api_key)
         
@@ -203,7 +234,7 @@ def crew_generate(request: GenerateRequest):
         # PASO 2: Usar CrewAI para refinar prompt de imagen
         prompt_imagen_refinado = None
         try:
-            from agents.crew import run_crew
+            from ..agents.crew import run_crew
             
             if run_crew:  # Si CrewAI está disponible
                 logger.info("🤖 Ejecutando CrewAI para refinar prompt...")
@@ -285,7 +316,7 @@ def generate_scientific(request: GenerateRequest):
         logger.info(f"🔬 Recibida request científica: {request.tema}")
 
         # Importar RAG
-        from rag.rag_system import RAGSystem
+        from ..rag.rag_system import RAGSystem
         rag_system = RAGSystem ()
         logger.info("✅ RAGSystem inicializado")
 

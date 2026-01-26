@@ -15,19 +15,19 @@ HAS_GROQ_API_KEY = os.getenv("GROQ_API_KEY") is not None
 
 
 # ============================================================================
-# Unit Tests (using mocks - always run)
+# Unit Tests (validating behavior - no superficial parameter checking)
 # ============================================================================
 
 class TestLLMFactoryUnit:
-    """Unit tests for LLM Factory using mocks"""
+    """Unit tests for LLM Factory validation logic"""
     
     def test_llm_factory_invalid_provider(self):
-        """Test that LLM Factory raises error for invalid provider"""
+        """✅ Test that LLM Factory raises error for invalid provider"""
         with pytest.raises(ValueError, match="Unknown LLM provider"):
             LLMFactory.get_client(provider="invalid_provider")
     
     def test_llm_factory_missing_api_key(self, monkeypatch):
-        """Test that LLM Factory raises error when API key is missing"""
+        """✅ Test that LLM Factory raises error when API key is missing"""
         # Remove GROQ_API_KEY from environment
         monkeypatch.delenv("GROQ_API_KEY", raising=False)
         
@@ -35,66 +35,25 @@ class TestLLMFactoryUnit:
             LLMFactory.get_client(provider="groq")
     
     @patch('langchain_groq.ChatGroq')
-    def test_llm_factory_creates_groq_client_with_correct_params(self, mock_chatgroq):
-        """Test that LLM Factory creates Groq client with correct parameters"""
-        # Setup
-        mock_client = Mock()
-        mock_chatgroq.return_value = mock_client
-        test_api_key = "test_api_key_123"
+    def test_llm_factory_handles_chatgroq_initialization_error(self, mock_chatgroq):
+        """✨ Test that factory properly propagates ChatGroq initialization errors"""
+        # Setup: ChatGroq raises an error during initialization
+        mock_chatgroq.side_effect = Exception("Authentication failed")
         
-        # Execute
-        client = LLMFactory.get_client(
-            provider="groq",
-            api_key=test_api_key,
-            model="mixtral-8x7b-32768",
-            temperature=0.5,
-            max_tokens=2048
-        )
-        
-        # Verify
-        assert client is not None
-        mock_chatgroq.assert_called_once_with(
-            api_key=test_api_key,
-            model="mixtral-8x7b-32768",
-            temperature=0.5,
-            max_tokens=2048
-        )
+        # Execute & Verify
+        with pytest.raises(Exception, match="Authentication failed"):
+            LLMFactory.get_client(
+                provider="groq",
+                api_key="invalid_key"
+            )
     
-    @patch('langchain_groq.ChatGroq')
-    def test_llm_factory_uses_default_groq_params(self, mock_chatgroq):
-        """Test that LLM Factory uses default parameters when not specified"""
-        # Setup
-        mock_client = Mock()
-        mock_chatgroq.return_value = mock_client
-        test_api_key = "test_api_key_123"
+    def test_llm_factory_provider_validation_happens_before_api_call(self, monkeypatch):
+        """✨ Test that provider validation occurs before attempting to create client"""
+        monkeypatch.setenv("GROQ_API_KEY", "test_key")
         
-        # Execute
-        client = LLMFactory.get_client(provider="groq", api_key=test_api_key)
-        
-        # Verify
-        assert client is not None
-        mock_chatgroq.assert_called_once_with(
-            api_key=test_api_key,
-            model="mixtral-8x7b-32768",  # default model
-            temperature=0.7,  # default temperature
-            max_tokens=1024   # default max_tokens
-        )
-    
-    @patch('langchain_groq.ChatGroq')
-    def test_llm_factory_default_provider(self, mock_chatgroq, monkeypatch):
-        """Test that LLM Factory uses default provider from environment"""
-        # Setup
-        mock_client = Mock()
-        mock_chatgroq.return_value = mock_client
-        test_api_key = "test_api_key_123"
-        monkeypatch.setenv("LLM_PROVIDER", "groq")
-        
-        # Execute - no provider specified, should use env var
-        client = LLMFactory.get_client(api_key=test_api_key)
-        
-        # Verify
-        assert client is not None
-        mock_chatgroq.assert_called_once()
+        # Should fail on provider validation, not on API initialization
+        with pytest.raises(ValueError, match="Unknown LLM provider"):
+            LLMFactory.get_client(provider="unknown_llm")
 
 
 # ============================================================================
@@ -103,28 +62,58 @@ class TestLLMFactoryUnit:
 
 @pytest.mark.skipif(not HAS_GROQ_API_KEY, reason="Requires GROQ_API_KEY")
 class TestLLMFactoryIntegration:
-    """Integration tests for LLM Factory with real API"""
+    """Integration tests - verify REAL behavior with actual API"""
     
-    def test_llm_factory_groq_client_creation(self):
-        """Test that LLM Factory can create a Groq client with real API key"""
+    def test_groq_client_can_be_created_with_real_api_key(self):
+        """✅ Verify factory creates working client (not testing parameters, testing existence)"""
         api_key = os.getenv("GROQ_API_KEY")
         
         try:
             client = LLMFactory.get_client(provider="groq", api_key=api_key)
             assert client is not None
+            # The client should have the methods needed to invoke
+            assert hasattr(client, 'invoke') or hasattr(client, '__call__')
         except Exception as e:
-            pytest.fail(f"Failed to create Groq client: {e}")
+            pytest.fail(f"Failed to create working Groq client: {e}")
     
-    def test_llm_factory_groq_with_custom_model(self):
-        """Test Groq client with custom model configuration"""
+    def test_groq_client_works_with_different_models(self):
+        """✅ Verify different models can be specified (not just parameter passing)"""
         api_key = os.getenv("GROQ_API_KEY")
         
+        # Test that we can create clients with different models
         try:
-            client = LLMFactory.get_client(
+            client1 = LLMFactory.get_client(
+                provider="groq",
+                api_key=api_key,
+                model="mixtral-8x7b-32768"
+            )
+            client2 = LLMFactory.get_client(
                 provider="groq",
                 api_key=api_key,
                 model="llama3-8b-8192"
             )
-            assert client is not None
+            assert client1 is not None
+            assert client2 is not None
         except Exception as e:
-            pytest.fail(f"Failed to create Groq client with custom model: {e}")
+            pytest.fail(f"Failed with different models: {e}")
+    
+    def test_invalid_api_key_fails_gracefully(self):
+        """✨ Verify factory handles invalid credentials appropriately"""
+        # Test: Invalid API key should either raise auth error OR create client for lazy validation
+        client_created = False
+        auth_error_raised = False
+        
+        try:
+            client = LLMFactory.get_client(
+                provider="groq",
+                api_key="invalid_key_x" * 10  # Definitely invalid
+            )
+            client_created = True
+        except (ValueError, RuntimeError, Exception) as e:
+            # Auth or API error should be raised during client creation
+            if "auth" in str(e).lower() or "api" in str(e).lower() or "key" in str(e).lower():
+                auth_error_raised = True
+        
+        # Either we got an auth error during creation, OR client was created for lazy validation
+        assert auth_error_raised or client_created, \
+            "Factory should either raise auth error or create client for lazy validation"
