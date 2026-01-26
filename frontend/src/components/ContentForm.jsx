@@ -5,9 +5,13 @@ export default function ContentForm({ onSubmit }) {
     const [tema, setTema] = useState("");
     const [plataforma, setPlataforma] = useState("");
     const [audiencia, setAudiencia] = useState("");
+    const [idioma, setIdioma] = useState("es");
     const [infoAdicional, setInfoAdicional] = useState("");
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // ✅ NUEVO: Estado para tabs
+    const [activeTab, setActiveTab] = useState("normal");
 
     function validateForm() {
         const newErrors = {};
@@ -29,6 +33,8 @@ export default function ContentForm({ onSubmit }) {
 
     function handleSubmit(e) {
         e.preventDefault();
+    
+        console.log("🔍 activeTab actual:", activeTab);  // ← AGREGAR ESTA LÍNEA
 
         const newErrors = validateForm();
         if (Object.keys(newErrors).length > 0) {
@@ -39,8 +45,17 @@ export default function ContentForm({ onSubmit }) {
         setErrors({});
         setIsSubmitting(true);
 
-        const datos = { tema, plataforma, audiencia, infoAdicional };
-        onSubmit(datos);
+        const datos = { tema, plataforma, audiencia, idioma, informacion_adicional: infoAdicional };
+
+        // ✅ NUEVO: Endpoint diferente según tab
+        const endpoint = 
+            activeTab === "scientific" ? "/generate-scientific" :
+            activeTab === "crew" ? "/crew/generate" :
+            "/generate";        
+        
+        console.log("📤 Enviando a App.jsx:", { datos: datos.tema, endpoint });  // ← AGREGAR
+
+        onSubmit(datos, endpoint);
 
         setTimeout(() => {
             setIsSubmitting(false);
@@ -51,6 +66,7 @@ export default function ContentForm({ onSubmit }) {
         setTema("");
         setPlataforma("");
         setAudiencia("");
+        setIdioma("es"); // ES por defecto
         setInfoAdicional("");
         setErrors({});
     }
@@ -59,8 +75,44 @@ export default function ContentForm({ onSubmit }) {
         <form onSubmit={handleSubmit} className="form-card">
             <div className="form-header">
                 <h2 className="form-title">📝 Crea tu Contenido</h2>
-            </div>
 
+                {/* ✅ NUEVO: TABS */}
+                <div className="form-tabs">
+                    <button
+                        type="button"
+                        className={`tab-button ${activeTab === "normal" ? "tab-active" : ""}`}
+                        onClick={() => setActiveTab("normal")}
+                    >
+                        📝 Normal
+                    </button>
+                    <button
+                        type="button"
+                        className={`tab-button ${activeTab === "scientific" ? "tab-active" : ""}`}
+                        onClick={() => setActiveTab("scientific")}
+                    >
+                        🔬 Científico
+                    </button>
+                    <button
+                        type="button"
+                        className={`tab-button ${activeTab === "crew" ? "tab-active" : ""}`}
+                        onClick={() => setActiveTab("crew")}
+                    >
+                        🤖 CrewAI
+                    </button>
+                </div>
+                </div>
+
+                {/* ✅ NUEVO: Avisos según tab */}
+                {activeTab === "scientific" && (
+                    <div className="scientific-notice">
+                        🔬 Contenido fundamentado en papers académicos y fuentes científicas
+                    </div>
+                )}
+                {activeTab === "crew" && (
+                    <div className="scientific-notice" style={{background: '#f0fdf4', borderColor: '#10b981', color: '#059669'}}>
+                        🤖 Generación inteligente con refinamiento automático de imagen
+                    </div>
+                )}
             <div className={`form-group ${errors.tema ? 'error' : ''}`}>
                 <label className="form-label" htmlFor="tema">Tema Principal</label>
                 <input
@@ -94,7 +146,7 @@ export default function ContentForm({ onSubmit }) {
                     <option value="twitter">🐦 Twitter / X</option>
                     <option value="blog">📰 Blog</option>
                     <option value="instagram">📸 Instagram</option>
-                    <option value="linkedIn">💼 LinkedIn</option>
+                    <option value="linkedin">💼 LinkedIn</option>
                     <option value="tiktok">🎵 TikTok</option>
                     <option value="youtube">▶️ YouTube</option>
                 </select>
@@ -116,6 +168,21 @@ export default function ContentForm({ onSubmit }) {
                     }}
                 />
                 {errors.audiencia && <span className="form-error">{errors.audiencia}</span>}
+            </div>
+
+            <div className="form-group">
+                <label className="form-label" htmlFor="idioma">🌐 Idioma</label>
+                <select
+                    id="idioma"
+                    value={idioma}
+                    onChange={(e) => setIdioma(e.target.value)}
+                    className="form-control"
+                >
+                    <option value="es">🇪🇸 Español</option>
+                    <option value="en">🇬🇧 English</option>
+                    <option value="fr">🇫🇷 Français</option>
+                    <option value="it">🇮🇹 Italiano</option>
+                </select>
             </div>
 
             <div className="form-group">

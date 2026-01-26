@@ -3,9 +3,14 @@
 Entry point for running the FastAPI application.
 This script should be run from the project root.
 """
+import sys
+from pathlib import Path
+
+# Add backend to path
+sys.path.insert(0, str(Path(__file__).parent / "backend"))
+
 import uvicorn
 import os
-import sys
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -22,9 +27,9 @@ if __name__ == "__main__":
     
     # Run Uvicorn server
     uvicorn.run(
-        "backend.app:app",
+        "app:app",
         host=os.getenv("SERVER_HOST", "0.0.0.0"),
         port=port,
-        reload=False,
+        reload=True,
         log_level="info"
     )

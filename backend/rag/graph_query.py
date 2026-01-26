@@ -14,6 +14,7 @@ class GraphQueryEngine:
         """
         
         self.graph_store = graph_store
+        self.entity_extractor = EntityExtractor() 
         logger.info("✅ GraphQueryEngine inicializado")
 
     def query_by_entity(self, entity: str) -> Dict:

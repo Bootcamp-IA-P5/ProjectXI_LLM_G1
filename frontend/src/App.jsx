@@ -6,7 +6,6 @@ import './styles/App.css';
 
 export default function App() {
 
-    const [datosForm, setDatosForm] = useState(null);
     const [contenidoGenerado, setContenidoGenerado] = useState("");
     const [imagenGenerada, setImagenGenerada] = useState("");
     const [loading, setLoading] = useState(false);
@@ -23,10 +22,9 @@ export default function App() {
         document.documentElement.setAttribute('data-theme', newMode ? 'dark' : 'light');
     };
 
-    async function handleFormSubmit(datos) {
-
+    async function handleFormSubmit(datos, endpoint = "/api/generate") {
         // TODO: Guardar datos en estado
-        setDatosForm(datos);
+       // setDatosForm(datos);
 
         // setLoading(true)
         setLoading(true);
@@ -36,7 +34,8 @@ export default function App() {
 
         // TODO: Llamar api.js
         try {
-            const response = await generateContent(datos);
+            console.log("🔍 Endpoint recibido:", endpoint);  // ← AGREGAR ESTA LÍNEA
+            const response = await generateContent(datos, endpoint);
             console.log("🎉 RESPONSE COMPLETO:", response);
             console.log("📝 CONTENIDO:", response.contenido);
             console.log("🖼️ IMAGE_URL RAW:", response.image_url);

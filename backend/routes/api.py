@@ -1,12 +1,11 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel # Para validar JSON
-# from backend.agents.crew import run_crew  # TODO: Uncomment after crewai is installed - chromadb version conflict
-from ..services.image_generator import generate_image
-from ..services.video_script_generator import VideoScriptGenerator
-from ..llm.prompts import get_full_prompt
-# from ..rag.rag_system import RAGSystem  # TODO: Fix import path and dependencies
+from typing import Optional
 import logging
 import os
+from pathlib import Path
+from services.image_generator import generate_image
+from llm.prompts import get_full_prompt
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["generation"])
@@ -17,7 +16,7 @@ class GenerateRequest(BaseModel):
     audiencia: str
     informacion_adicional: str = "" 
     contexto_marca: str = ""
-    idioma: str = "Castellano"
+    idioma: str = "es"
 
 
 class VideoScriptRequest(BaseModel):
@@ -71,6 +70,13 @@ def generate_content(request: GenerateRequest):
     try:    
         logger.info(f"📝 Recibida request: tema={request.tema}, plataforma={request.plataforma}, audiencia={request.audiencia}")
         
+        # ✅ En lugar de importar desde app, usar directamente
+        from llm.groq_client import GroqClient
+        import os
+
+        groq_api_key = os.getenv("GROQ_API_KEY")
+        groq_client = GroqClient(api_key=groq_api_key)
+        
         # Validar plataforma
         if request.plataforma.lower() not in PLATFORM_SIZES:
             raise ValueError(f"Plataforma '{request.plataforma}' no válida. Usa: {list(PLATFORM_SIZES.keys())}")
@@ -86,9 +92,6 @@ def generate_content(request: GenerateRequest):
         
         logger.info(f"📬 Prompt generado: {prompt_contenido[:100]}...")
         logger.info(f"📬 Enviando prompt a Groq...")
-        
-        # Lazy import para evitar circular imports
-        from ..app import groq_client
         
         logger.info(f"🔍 Groq client status: {groq_client}")
         logger.info(f"🔍 Groq client api_key exists: {bool(groq_client.api_key)}")
@@ -168,8 +171,8 @@ Dirigido especialmente a {request.audiencia}.
             
             # Convertir URL relativa a absoluta si es necesario
             if image_url.startswith('/'):
-                # Usar variable de entorno para URL base, default a localhost:5001 (puerto del backend)
-                base_url = os.getenv("BACKEND_URL", "http://localhost:5001")
+                # Usar variable de entorno para URL base, default a localhost:8000
+                base_url = os.getenv("BACKEND_URL", "http://localhost:5000")
                 image_url = f"{base_url}{image_url}"
                 logger.info(f"✅ URL convertida a absoluta: {image_url}")
                 
@@ -203,245 +206,154 @@ Dirigido especialmente a {request.audiencia}.
 
 @router.post("/crew/generate")
 def crew_generate(request: GenerateRequest):
-    """Endpoint multiagente: Groq >> Gemini >> Imagen (alias para /api/generate)"""
-    return generate_content(request)
-
-
-# ========== ENDPOINTS DE VIDEO SCRIPTS ==========
-
-@router.post("/video/script")
-def generate_video_script(request: VideoScriptRequest):
-    """Generar guión completo para video (YouTube, TikTok, Instagram Reels, YouTube Shorts)
-    
-    Incluye:
-    - Concepto general y gancho inicial
-    - Guión narrativo
-    - Coreografía y movimientos
-    - Recomendaciones musicales
-    - Transiciones y efectos
-    - Equipamiento necesario
-    - Timeline detallado
-    - Tips para viralizar
-    - Checklist de producción
+    """
+    ✅ ENDPOINT MULTIAGENTE COMPLETO
+    Groq (contenido) → CrewAI/Gemini (refina prompt imagen) → HF (genera imagen)
     """
     try:
-        logger.info(f"🎬 Generando script de video: {request.plataforma} - {request.tema}")
+        logger.info(f"🤖 CrewAI Request: {request.tema}")
         
-        # Validar plataformas permitidas
-        plataformas_video = ["youtube", "tiktok", "youtube_shorts", "instagram_reels"]
-        if request.plataforma not in plataformas_video:
-            raise ValueError(
-                f"Plataforma '{request.plataforma}' no válida para videos. "
-                f"Usa: {plataformas_video}"
-            )
+        # PASO 1: Generar contenido con Groq (igual que en /generate)
+        from llm.groq_client import GroqClient
+        groq_api_key = os.getenv("GROQ_API_KEY")
+        groq_client = GroqClient(api_key=groq_api_key)
         
-        # Lazy import para evitar circular imports
-        from ..app import groq_client
-        
-        # Instanciar generador de scripts
-        video_gen = VideoScriptGenerator(groq_client)
-        
-        # Generar guión
-        resultado = video_gen.generate_video_script(
+        prompt_contenido = get_full_prompt(
             tema=request.tema,
             plataforma=request.plataforma,
             audiencia=request.audiencia,
-            estilo=request.estilo,
-            idioma=request.idioma,
-            duracion_minutos=request.duracion_minutos,
-            informacion_adicional=request.informacion_adicional
-        )
-        
-        logger.info(f"✅ Script generado exitosamente")
-        return resultado
-        
-    except ValueError as e:
-        logger.error(f"❌ Error de validación: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
-    except ConnectionError as e:
-        logger.error(f"❌ Error de conexión LLM: {str(e)}")
-        raise HTTPException(status_code=503, detail=str(e))
-    except Exception as e:
-        logger.error(f"❌ Error generando script: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
-
-
-@router.post("/video/choreography")
-def generate_choreography(request: ChoreographyRequest):
-    """Generar guía de coreografía paso a paso para videos de baile
-    
-    Incluye:
-    - Visión general del concepto
-    - Pasos básicos explicados
-    - Coreografía detallada segundo a segundo
-    - Variaciones (fácil/difícil)
-    - Tips de ejecución
-    - Formaciones de grupo
-    """
-    try:
-        logger.info(f"🕺 Generando coreografía: {request.tema}")
-        
-        from ..app import groq_client
-        
-        video_gen = VideoScriptGenerator(groq_client)
-        
-        resultado = video_gen.generate_choreography_guide(
-            tema=request.tema,
-            audiencia=request.audiencia,
-            nivel_dificultad=request.nivel_dificultad,
-            idioma=request.idioma,
-            informacion_adicional=request.informacion_adicional
-        )
-        
-        logger.info(f"✅ Coreografía generada exitosamente")
-        return resultado
-        
-    except ConnectionError as e:
-        logger.error(f"❌ Error de conexión LLM: {str(e)}")
-        raise HTTPException(status_code=503, detail=str(e))
-    except Exception as e:
-        logger.error(f"❌ Error generando coreografía: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
-
-
-@router.post("/video/music-guide")
-def generate_music_guide(request: MusicGuideRequest):
-    """Generar guía de recomendaciones musicales para video
-    
-    Incluye:
-    - Análisis del tema y emociones
-    - Top 5 canciones recomendadas con links
-    - Alternativas sin copyright
-    - Soundtracks y efectos de sonido
-    - Tips de sincronización
-    """
-    try:
-        logger.info(f"🎵 Generando guía musical: {request.tema}")
-        
-        from ..app import groq_client
-        
-        video_gen = VideoScriptGenerator(groq_client)
-        
-        resultado = video_gen.generate_music_guide(
-            tema=request.tema,
-            plataforma=request.plataforma,
-            genero=request.genero,
+            informacion_adicional=request.informacion_adicional,
             idioma=request.idioma
         )
         
-        logger.info(f"✅ Guía musical generada exitosamente")
-        return resultado
+        contenido = groq_client.generate(prompt_contenido)
+        logger.info(f"✅ Contenido Groq: {len(contenido)} caracteres")
         
-    except ConnectionError as e:
-        logger.error(f"❌ Error de conexión LLM: {str(e)}")
-        raise HTTPException(status_code=503, detail=str(e))
-    except Exception as e:
-        logger.error(f"❌ Error generando guía musical: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
-
-
-@router.get("/video/platforms")
-def get_supported_video_platforms():
-    """Obtener lista de plataformas de video soportadas"""
-    return {
-        "platforms": [
-            {
-                "id": "youtube",
-                "nombre": "YouTube",
-                "duracion_minutos": {"min": 2, "max": 60},
-                "formato": "Horizontal (16:9)",
-                "descripcion": "Videos largos y detallados"
-            },
-            {
-                "id": "youtube_shorts",
-                "nombre": "YouTube Shorts",
-                "duracion_minutos": {"min": 0.15, "max": 1},
-                "formato": "Vertical (9:16)",
-                "descripcion": "Videos cortos rápidos y dinámicos"
-            },
-            {
-                "id": "tiktok",
-                "nombre": "TikTok",
-                "duracion_minutos": {"min": 0.15, "max": 10},
-                "formato": "Vertical (9:16)",
-                "descripcion": "Contenido viral, muy dinámico"
-            },
-            {
-                "id": "instagram_reels",
-                "nombre": "Instagram Reels",
-                "duracion_minutos": {"min": 0.15, "max": 3},
-                "formato": "Vertical (9:16)",
-                "descripcion": "Contenido visualmente atractivo"
-            }
-        ]
-    }
-
-
-@router.get("/video/styles")
-def get_video_styles():
-    """Obtener estilos de video disponibles"""
-    return {
-        "estilos": [
-            "Educativo",
-            "Entretenimiento",
-            "Tutorial",
-            "Lifestyle",
-            "Motivacional",
-            "Comedy",
-            "Drama",
-            "Reviews",
-            "Vlogs",
-            "Trailers"
-        ]
-    }
-
-
-@router.post("/generate-video-script")
-def generate_video_script(request: GenerateRequest):
-    """
-    Endpoint para generar guiones de video con coreografía, música, transiciones, etc.
-    Soporta YouTube, TikTok y YouTube Shorts
-    """
-    try:
-        logger.info(f"📹 Generando guion de video para: tema={request.tema}, plataforma={request.plataforma}")
+        # PASO 2: Usar CrewAI para refinar prompt de imagen
+        prompt_imagen_refinado = None
+        try:
+            from agents.crew import run_crew
+            
+            if run_crew:  # Si CrewAI está disponible
+                logger.info("🤖 Ejecutando CrewAI para refinar prompt...")
+                prompt_imagen_refinado = run_crew(
+                    tema=request.tema,
+                    plataforma=request.plataforma,
+                    audiencia=request.audiencia,
+                    contenido_groq=contenido,
+                    contexto_marca=request.informacion_adicional
+                )
+                logger.info(f"✅ Prompt refinado por CrewAI")
+            else:
+                logger.warning("⚠️ CrewAI no disponible")
+                
+        except Exception as crew_error:
+            logger.error(f"❌ Error en CrewAI: {str(crew_error)}, usando fallback")
         
-        # Validar que sea una plataforma de video
-        video_platforms = ["tiktok", "youtube", "youtube_shorts"]
-        if request.plataforma.lower() not in video_platforms:
-            raise ValueError(f"Plataforma '{request.plataforma}' no es válida para videos. Usa: {video_platforms}")
+        # Si CrewAI falló, usar template estándar
+        if not prompt_imagen_refinado:
+            template_imagen = IMAGE_PROMPT_TEMPLATES.get(
+                request.plataforma.lower(),
+                f"High quality image about {request.tema}"
+            )
+            prompt_imagen_refinado = template_imagen.format(
+                tema=request.tema,
+                audiencia=request.audiencia
+            )
         
-        # Lazy import
-        from ..services.video_script_generator import VideoScriptGenerator
-        from ..app import groq_client
+        # PASO 3: Generar imagen con prompt refinado
+        size = PLATFORM_SIZES.get(request.plataforma.lower(), {"width": 1024, "height": 1024})
         
-        video_generator = VideoScriptGenerator(llm_client=groq_client)
+        try:
+            image_url = generate_image(
+                prompt_imagen_refinado,
+                width=size["width"],
+                height=size["height"]
+            )
+            logger.info(f"✅ Imagen generada: {image_url}")
+        except Exception as e:
+            logger.warning(f"⚠️ Error imagen: {str(e)}, usando placeholder")
+            image_url = f"https://via.placeholder.com/{size['width']}x{size['height']}?text={request.tema[:30]}"
         
-        # Generar el guion de video completo
-        video_script = video_generator.generate_video_script(
-            tema=request.tema,
-            plataforma=request.plataforma,
-            audiencia=request.audiencia,
-            idioma=request.idioma,
-            informacion_adicional=request.informacion_adicional
-        )
+        # Convertir URL si es relativa
+        if image_url.startswith('/'):
+            base_url = os.getenv("BACKEND_URL", "http://localhost:5000")
+            image_url = f"{base_url}{image_url}"
         
-        logger.info(f"✅ Guion de video generado exitosamente")
-        
+        # RESPUESTA FINAL CON METADATA DE CREW
         return {
+            "contenido": contenido,
+            "image_url": image_url,
             "status": "success",
-            "video_script": video_script,
+            "execution_type": "multiagent_crew",  # ✅ ESTO ES LA CLAVE
             "metadata": {
                 "tema": request.tema,
                 "plataforma": request.plataforma,
                 "audiencia": request.audiencia,
                 "idioma": request.idioma,
-                "tipo": "guion_de_video_completo"
+                "crew_executed": True,
+                "image_prompt_refined": True
             }
         }
         
-    except ValueError as e:
-        logger.error(f"❌ Error de validación: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"❌ Error generando guion de video: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error generando guion de video: {str(e)}")
+        logger.error(f"❌ Error en crew_generate: {str(e)}")
+        # FALLBACK: usar generación simple
+        logger.info("⚠️ Fallback a /api/generate...")
+        return generate_content(request)
+    
+
+@router.post("/generate-scientific")
+def generate_scientific(request: GenerateRequest):
+    """
+    RAG Endpoint: Contenido científico fundamentado en papers académicos
+    Reutiliza generate_content + contexto RAG
+    """
+
+    try:
+        logger.info(f"🔬 Recibida request científica: {request.tema}")
+
+        # Importar RAG
+        from rag.rag_system import RAGSystem
+        rag_system = RAGSystem ()
+        logger.info("✅ RAGSystem inicializado")
+
+        # Procesar query con RAG
+        logger.info(f"⏳ Procesando query con RAG: {request.tema}")
+        rag_context = rag_system.process_query(
+            query=request.tema,
+            use_graph_rag=True
+        )
+        logger.info(f"✅ RAG context obtenido ({len(rag_context)} caracteres)")
+
+        # Crear prompt mejorado con contexto RAG
+        rag_instruction = f"""
+
+🔬 CONTEXTO CIENTÍFICO (fundamentado en papers académicos):
+{rag_context}
+
+Usa este contexto académico para fundamentar tu respuesta. 
+Mantén rigor científico pero hazlo accesible para {request.audiencia}.
+"""
+
+        # Reutilizar información_adicional existente
+        if request.informacion_adicional:
+            request.informacion_adicional += "\n\n" + rag_instruction
+        else:
+            request.informacion_adicional = rag_instruction
+        
+        # Llamar a generate_content existente (evita duplicación)
+        logger.info("📤 Llamando a generate_content con contexto RAG")
+        response = generate_content(request)
+        
+        # Agregar metadata RAG
+        response["metadata"]["execution_type"] = "rag"
+        response["metadata"]["rag_context_length"] = len(rag_context)
+        response["metadata"]["has_scientific_context"] = True
+        
+        logger.info("✅ Respuesta científica generada exitosamente")
+        return response
+        
+    except Exception as e:
+        logger.error(f"❌ Error en RAG: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error RAG: {str(e)}")

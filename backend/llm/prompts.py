@@ -1,13 +1,30 @@
 # Prompt base (aplica a todo)
 SYSTEM_PROMPT = "Eres experto en generar contenido para diversos medios y audiencias, utilizando IA generativa y automatizando publicaciones, listas para publicar:"
 
+# Mapeo de idiomas
+IDIOMA_MAP = {
+    "es": "Español",
+    "en": "English",
+    "fr": "Français",
+    "it": "Italiano"
+}
+
+def get_idioma_instruction(idioma="es"):
+    """Retorna instrucción de idioma para el prompt"""
+    idioma_nombre = IDIOMA_MAP.get(idioma, "Español")
+    return f"Responde ÚNICAMENTE en {idioma_nombre}. No mezcles idiomas."
+
+
 # Prompts especificos por plataforma
-def create_twitter_prompt(tema, audiencia, informacion_adicional=""):
+def create_twitter_prompt(tema, audiencia, informacion_adicional="", idioma="es"):
+    idioma_instruction = get_idioma_instruction(idioma)
     return f"""
     Eres un experto en Social Media especializado en Twitter/X.
     Genera un hilo de máximo 3 tweets sobre el tema: '{tema}'.
     Audiencia objetivo: {audiencia}.
     {f'Contexto de la empresa/marca: {informacion_adicional}' if informacion_adicional else ''}
+    
+    {idioma_instruction}
     
     Requisitos ESTRICTOS:
     - El primer tweet debe ser un 'hook' (gancho) que invite a seguir leyendo.
@@ -20,12 +37,15 @@ def create_twitter_prompt(tema, audiencia, informacion_adicional=""):
     FORMATO: Presenta cada tweet numerado (Tweet 1:, Tweet 2:, Tweet 3:)
     """
 
-def create_instagram_prompt(tema, audiencia, informacion_adicional=""):
+def create_instagram_prompt(tema, audiencia, informacion_adicional="", idioma="es"):
+    idioma_instruction = get_idioma_instruction(idioma)
     return f"""
     Eres un copywriter creativo experto en Instagram.
     Genera el caption para una publicación sobre: '{tema}'.
     Audiencia objetivo: {audiencia}.
     {f'Contexto de la empresa/marca: {informacion_adicional}' if informacion_adicional else ''}
+    
+    {idioma_instruction}
     
     Requisitos ESTRICTOS:
     - Estructura: Gancho inicial IMPACTANTE, cuerpo con valor/entretenimiento y Call to Action (CTA) claro.
@@ -39,88 +59,52 @@ def create_instagram_prompt(tema, audiencia, informacion_adicional=""):
     FORMATO: Caption + línea en blanco + Hashtags
     """
 
-def create_linkedin_prompt(tema, audiencia, informacion_adicional=""):
+def create_linkedin_prompt(tema, audiencia, informacion_adicional="", idioma="es"):
+    idioma_instruction = get_idioma_instruction(idioma)
     return f"""
     Eres un líder de opinión y experto en branding profesional en LinkedIn.
     Escribe un post reflexivo sobre: '{tema}'.
     Audiencia objetivo: {audiencia}.
     {f'Contexto de la empresa/marca: {informacion_adicional}' if informacion_adicional else ''}
     
+    {idioma_instruction}
+    
     Requisitos ESTRICTOS:
     - Tono: Profesional, analítico y autoritario pero accesible a {audiencia}.
-    - Formato: Estilo "copywriting de LinkedIn" (líneas cortas, mucho espacio en blanco).
-    - Contenido: Aporta un ángulo de negocio, una lección aprendida o una tendencia del sector.
-    - Información específica y valiosa sobre {tema}.
-    - Finaliza con una pregunta que invite al debate profesional.
-    - Máximo 3 hashtags profesionales.
-    - Evita jerga corporativa innecesaria, sé directo y claro.
+    - Estructura: Introducción gancho, desarrollo con insights, conclusión con CTA.
+    - Incluye 3-5 emojis estratégicamente colocados para mejorar el visual.
+    - Hashtags: 5-8 hashtags relevantes al final.
+    - Máximo 3000 caracteres.
+    - Información valiosa y original sobre {tema}.
+    - Si menciona estadísticas o datos, que sean creíbles y contextuales.
+    
+    FORMATO: Post completo con estructura clara
     """
 
-def create_blog_prompt(tema, audiencia, informacion_adicional=""):
+def create_blog_prompt(tema, audiencia, informacion_adicional="", idioma="es"):
+    idioma_instruction = get_idioma_instruction(idioma)
     return f"""
-    Eres un redactor de contenidos SEO senior y especialista en {tema}.
-    Escribe un artículo de blog estructurado sobre: '{tema}'.
+    Eres un redactor experto en Blog y Content Marketing.
+    Escribe un artículo completo sobre: '{tema}'.
     Audiencia objetivo: {audiencia}.
     {f'Contexto de la empresa/marca: {informacion_adicional}' if informacion_adicional else ''}
     
-    Requisitos ESTRICTOS:
-    - Título optimizado para SEO (H1).
-    - Introducción sugerente que plantee un problema o necesidad específica.
-    - Cuerpo dividido con subtítulos claros (H2, H3).
-    - Contenido informativo, detallado y bien estructurado sobre {tema}.
-    - Conclusión con un resumen de puntos clave y CTA.
-    - Tono: Educativo, detallado y experto para {audiencia}.
-    - Información práctica, ejemplos reales y datos concretos sobre {tema}.
-    - Longitud aproximada: 600-900 palabras.
-    - Usa listas, bullet points cuando sea apropiado.
-    """
-
-def create_tiktok_prompt(tema, audiencia, informacion_adicional=""):
-    return f"""
-    Eres un experto en TikTok y contenido viral.
-    Crea un guion de video corto (30-60 segundos) sobre: '{tema}'.
-    Audiencia objetivo: {audiencia}.
-    {f'Contexto de la empresa/marca: {informacion_adicional}' if informacion_adicional else ''}
+    {idioma_instruction}
     
     Requisitos ESTRICTOS:
-    - Hook impactante en los primeros 3 segundos.
-    - Transiciones rápidas y dinámicas que mantengan atención.
-    - Lenguaje casual y relatable para {audiencia}.
-    - Incluye acciones claras (qué mostrar en pantalla).
-    - Sugerencias de efectos/sonidos populares.
-    - Recomendación de tendencias o hashtags trending.
-    - Máximo 150 palabras (texto hablado).
-    - Finaliza con un CTA o pregunta para comentarios.
-    - Información útil/entretenida sobre {tema}.
+    - Estructura: Título impactante, introducción, 3-4 secciones con subtítulos, conclusión.
+    - Usa # para títulos y ## para subtítulos (Markdown).
+    - Tono: Informativo, educativo y accesible a {audiencia}.
+    - Mínimo 1500 palabras, máximo 3000.
+    - Incluye ejemplos prácticos y casos de uso reales.
+    - SEO-friendly: Incluye keywords naturales sobre {tema}.
+    - Finaliza con una conclusión que invite a la acción o reflexión.
     
-    FORMATO: Divide por segundos (0-3s: Hook, 3-15s: Contenido, etc.)
+    FORMATO: Artículo completo con estructura Markdown
     """
-
-def create_youtube_prompt(tema, audiencia, informacion_adicional=""):
-    return f"""
-    Eres un creador de contenido de YouTube y video marketer experto.
-    Crea un guion para un video de 5-10 minutos sobre: '{tema}'.
-    Audiencia objetivo: {audiencia}.
-    {f'Contexto de la empresa/marca: {informacion_adicional}' if informacion_adicional else ''}
-    
-    Requisitos ESTRICTOS:
-    - Thumbnail idea: Descripción visual que capture atención.
-    - Título SEO optimizado y atractivo para {audiencia}.
-    - Intro (0-30s): Hook emocional que convenza de ver todo.
-    - Estructura: Problema → Solución → Demostración → CTA.
-    - Secciones con timestamps (intro, desarrollo, conclusión).
-    - Lenguaje: Natural, conversacional pero con autoridad sobre {tema}.
-    - Incluye puntos clave a destacar con efectos/gráficos.
-    - Sugerencias de B-roll o visualización de contenido.
-    - Outro con suscripción/social media CTA.
-    - Información detallada, educativa y valiosa sobre {tema}.
-    
-    FORMATO: Outline por minutos (0:00-0:30 Intro, 0:30-2:00 Problema, etc.)
-    """
-    
 
 # Funcion que combine todo - VERSIÓN MEJORADA
-def get_full_prompt(tema, plataforma, audiencia, informacion_adicional="", idioma="Castellano"):
+def get_full_prompt(tema, plataforma, audiencia, informacion_adicional="", idioma="es"):
     """
     Construye el 'Super Prompt' combinando todas las capas de requisitos.
     
@@ -129,10 +113,11 @@ def get_full_prompt(tema, plataforma, audiencia, informacion_adicional="", idiom
         plataforma: Plataforma destino (twitter, instagram, linkedin, blog)
         audiencia: Audiencia objetivo
         informacion_adicional: Contexto de marca o información extra
-        idioma: Idioma del contenido (default: Castellano)
+        idioma: Idioma del contenido (default: "es" para Español)
     """
     # Capa 1: Restricción de Idioma (Prioridad máxima)
-    instruccion_idioma = f"⚠️ IMPORTANTE: Toda tu respuesta debe estar escrita ÚNICAMENTE en {idioma}."
+    idioma_nombre = IDIOMA_MAP.get(idioma, "Español")
+    instruccion_idioma = f"⚠️ IMPORTANTE: Toda tu respuesta debe estar escrita ÚNICAMENTE en {idioma_nombre}."
 
     # Capa 2: Personalización de Marca 
     contexto_marca = f"🏢 Contexto de marca/empresa: {informacion_adicional}" if informacion_adicional else ""
@@ -151,7 +136,7 @@ def get_full_prompt(tema, plataforma, audiencia, informacion_adicional="", idiom
         raise ValueError(f"Plataforma '{plataforma}' no soportada. Usa: {list(plataformas.keys())}")
     
     func_prompt = plataformas[plataforma.lower()]
-    prompt_especifico = func_prompt(tema, audiencia, informacion_adicional)
+    prompt_especifico = func_prompt(tema, audiencia, informacion_adicional, idioma)
 
     # Unimos todo en un solo bloque de texto coherente
     base = SYSTEM_PROMPT

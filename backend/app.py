@@ -1,37 +1,80 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from .routes.api import router
 from fastapi.middleware.cors import CORSMiddleware
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 import logging
-from .services.content_generator import ContentGenerator
-from .llm.groq_client import GroqClient
 
 
 load_dotenv()
-
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# ============================================
 # Crear app FastAPI
+# ============================================
 app = FastAPI(
     title="ProjectXI LLM API",
     description="API para generar contenido con LLMs",
     version="1.0.0"
 )
 
+# ============================================
+# CORS - permitir conexiones desde frontend
+# ============================================
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",      # ✅ Frontend dev
+        "http://localhost:5000",      # ✅ Local testing
+        "http://localhost:5001",
+        "http://127.0.0.1:3000",      # ✅ Alternative localhost
+        "http://127.0.0.1:5000",      # ✅ Alternative localhost
+        "http://127.0.0.1:5001",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],              # Permite POST, GET, OPTIONS, etc.
+    allow_headers=["*"],              # Permite todos los headers
+)
+logger.info("✅ CORS configurado")
+
+
+# ============================================
 # Instanciar cliente LLM global
+# ============================================
+from llm.groq_client import GroqClient
+from services.content_generator import ContentGenerator
 groq_api_key = os.getenv("GROQ_API_KEY")
+if not groq_api_key:
+    logger.warning("⚠️ GROQ_API_KEY no encontrada en .env")
+
 groq_client = GroqClient(api_key=groq_api_key)
 content_generator = ContentGenerator(groq_client) 
 
+logger.info("✅ Clientes LLM inicializados")
+
+# ============================================
+# archivos estaticos de imagenes generadas
+# ============================================
+image_dir = Path(__file__).parent / "generated_images"
+image_dir.mkdir(exist_ok=True)
+app.mount("/generated_images", StaticFiles(directory=str(image_dir)), name="generated_images")
+
+logger.info(f"✅ Directorio de imágenes: {image_dir}")
+
+# ============================================
 # Registrar rutas
-from .routes.api import router
+# ============================================
+from routes.api import router
 app.include_router(router)
 
+logger.info("✅ Rutas registradas")
+
+# ============================================
 # Endpoint raíz
+# ============================================
 @app.get("/")
 def root():
     """Endpoint raíz de la API"""
@@ -42,25 +85,15 @@ def root():
         "health": "/health"
     }
 
-# archivos estaticos de imagenes generadas
-app.mount("/generated_images", StaticFiles(directory="generated_images"), name="generated_images")
-
-
-# CORS - permitir conexiones desde frontend
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost"], # React en 3000
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Health check
 @app.get("/health")
 def health():
     """Endpoint para verificar que la API está viva"""
     return {"status": "ok"}
 
+# ============================================
+# Entry point
+# ============================================
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("BACKEND_PORT", 5000))

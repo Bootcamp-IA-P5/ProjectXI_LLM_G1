@@ -40,13 +40,17 @@ class GraphStore:
         """ 
         Inicializar almacen de grafo
         """
-        
         self.graph_file = str(graph_file)
         self.graph = nx.DiGraph()   # Directed Graph, las relaciones tienen direccion
-        self.load_graph()           # Cargar grafo anterior si existe
+        #self.load_graph()           # Cargar grafo anterior si existe
         
         logger.info("✅ GraphStore inicializado")
 
+    def clear_graph(self):
+        """Limpiar grafo - eliminar todos los nodos y relaciones"""
+        self.graph.clear()
+        logger.info("✅ Grafo limpiado para nueva query")
+        
     def add_entity(self, entity: str, metadata: Dict = None):
         """
         Agregar nodo (entidad/concepto) al grafo
@@ -104,11 +108,9 @@ class GraphStore:
             
         # Agregar todas las relaciones
         for source, relation, target in relationships:
-            # Verificar que ambas entidades existen en la lista original
-            if source in entities and target in entities:
-                self.add_relationship(source, relation, target)
-            else:
-                logger.warning(f"⚠️ Relación ignorada: {source} → {target} (entidad no en lista)")
+            self.add_entity(source)
+            self.add_entity(target)
+            self.add_relationship(source, relation, target)
                 
     def get_neighbors(self, entity: str, depth: int = 1) -> Dict[str, List]:
         """
