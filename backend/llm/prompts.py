@@ -103,6 +103,55 @@ def create_blog_prompt(tema, audiencia, informacion_adicional="", idioma="es"):
     FORMATO: Artículo completo con estructura Markdown
     """
 
+def create_tiktok_prompt(tema, audiencia, informacion_adicional="", idioma="es"):
+    idioma_instruction = get_idioma_instruction(idioma)
+    return f"""
+    Eres un experto en TikTok y contenido viral.
+    Crea un guion de video corto (30-60 segundos) sobre: '{tema}'.
+    Audiencia objetivo: {audiencia}.
+    {f'Contexto de la empresa/marca: {informacion_adicional}' if informacion_adicional else ''}
+    
+    {idioma_instruction}
+    
+    Requisitos ESTRICTOS:
+    - Hook impactante en los primeros 3 segundos.
+    - Transiciones rápidas y dinámicas que mantengan atención.
+    - Lenguaje casual y relatable para {audiencia}.
+    - Incluye acciones claras (qué mostrar en pantalla).
+    - Sugerencias de efectos/sonidos populares.
+    - Recomendación de tendencias o hashtags trending.
+    - Máximo 150 palabras (texto hablado).
+    - Finaliza con un CTA o pregunta para comentarios.
+    - Información útil/entretenida sobre {tema}.
+    
+    FORMATO: Divide por segundos (0-3s: Hook, 3-15s: Contenido, etc.)
+    """
+
+def create_youtube_prompt(tema, audiencia, informacion_adicional="", idioma="es"):
+    idioma_instruction = get_idioma_instruction(idioma)
+    return f"""
+    Eres un creador de contenido de YouTube y video marketer experto.
+    Crea un guion para un video de 5-10 minutos sobre: '{tema}'.
+    Audiencia objetivo: {audiencia}.
+    {f'Contexto de la empresa/marca: {informacion_adicional}' if informacion_adicional else ''}
+    
+    {idioma_instruction}
+    
+    Requisitos ESTRICTOS:
+    - Thumbnail idea: Descripción visual que capture atención.
+    - Título SEO optimizado y atractivo para {audiencia}.
+    - Intro (0-30s): Hook emocional que convenza de ver todo.
+    - Estructura: Problema → Solución → Demostración → CTA.
+    - Secciones con timestamps (intro, desarrollo, conclusión).
+    - Lenguaje: Natural, conversacional pero con autoridad sobre {tema}.
+    - Incluye puntos clave a destacar con efectos/gráficos.
+    - Sugerencias de B-roll o visualización de contenido.
+    - Outro con suscripción/social media CTA.
+    - Información detallada, educativa y valiosa sobre {tema}.
+    
+    FORMATO: Outline por minutos (0:00-0:30 Intro, 0:30-2:00 Problema, etc.)
+    """
+
 # Funcion que combine todo - VERSIÓN MEJORADA
 def get_full_prompt(tema, plataforma, audiencia, informacion_adicional="", idioma="es"):
     """

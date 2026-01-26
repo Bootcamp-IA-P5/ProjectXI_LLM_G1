@@ -187,6 +187,7 @@ Dirigido especialmente a {request.audiencia}.
             "contenido": contenido, 
             "image_url": image_url,
             "status": "success",
+            "validado": True,
             "metadata": {
                 "tema": request.tema,
                 "plataforma": request.plataforma,
