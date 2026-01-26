@@ -222,7 +222,7 @@ Sé específico y práctico en cada recomendación."""
 
         except Exception as e:
             logger.error(f"❌ Error generando guión de video: {str(e)}")
-            raise ConnectionError(f"Error al generar guión de video: {str(e)}")
+            raise RuntimeError(f"Error al generar guión de video: {str(e)}")
 
     def generate_choreography_guide(
         self,
@@ -299,7 +299,7 @@ Sé muy específico y práctico. Usa descripciones detalladas que cualquiera pue
             }
         except Exception as e:
             logger.error(f"❌ Error generando coreografía: {str(e)}")
-            raise ConnectionError(f"Error al generar guía de coreografía: {str(e)}")
+            raise RuntimeError(f"Error al generar guía de coreografía: {str(e)}")
 
     def generate_music_guide(
         self,
@@ -366,4 +366,4 @@ Sé específico con artistas y canciones reales."""
             }
         except Exception as e:
             logger.error(f"❌ Error generando guía de música: {str(e)}")
-            raise ConnectionError(f"Error al generar guía de música: {str(e)}")
+            raise RuntimeError(f"Error al generar guía de música: {str(e)}")

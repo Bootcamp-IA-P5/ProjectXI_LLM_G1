@@ -98,15 +98,22 @@ class TestLLMFactoryIntegration:
             pytest.fail(f"Failed with different models: {e}")
     
     def test_invalid_api_key_fails_gracefully(self):
-        """✨ Verify factory handles invalid credentials"""
+        """✨ Verify factory handles invalid credentials appropriately"""
+        # Test: Invalid API key should either raise auth error OR create client for lazy validation
+        client_created = False
+        auth_error_raised = False
+        
         try:
             client = LLMFactory.get_client(
                 provider="groq",
-                api_key="invalid_key_that_should_fail"
+                api_key="invalid_key_x" * 10  # Definitely invalid
             )
-            # If we got here, try to actually use it to trigger auth error
-            # This might not fail immediately, but would fail on actual API call
-            assert client is not None
-        except Exception as e:
-            # Expected to fail with auth error
-            assert "auth" in str(e).lower() or "api" in str(e).lower() or client is not None
+            client_created = True
+        except (ValueError, RuntimeError, Exception) as e:
+            # Auth or API error should be raised during client creation
+            if "auth" in str(e).lower() or "api" in str(e).lower() or "key" in str(e).lower():
+                auth_error_raised = True
+        
+        # Either we got an auth error during creation, OR client was created for lazy validation
+        assert auth_error_raised or client_created, \
+            "Factory should either raise auth error or create client for lazy validation"

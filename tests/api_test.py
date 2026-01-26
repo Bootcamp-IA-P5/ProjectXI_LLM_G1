@@ -14,7 +14,7 @@ sys.modules['huggingface_hub'] = MagicMock()
 
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
-from routes.api import router
+from backend.routes.api import router
 
 # Crear app de test
 app = FastAPI()
